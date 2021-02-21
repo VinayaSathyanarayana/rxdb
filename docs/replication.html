@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Replication · RxDB - Documentation</title>
+        <title>Replication CouchDB · RxDB - Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="query-change-detection.html" />
+    <link rel="next" href="replication-graphql.html" />
     
     
     <link rel="prev" href="leader-election.html" />
@@ -102,6 +102,11 @@
         
         <li>
             <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/sponsors/pubkey" target="_blank" class="custom-link">Donate @github </a>
         </li>
     
     
@@ -254,10 +259,10 @@
     
         <li class="chapter " data-level="1.3.1.5" data-path="rx-database.html">
             
-                <a href="rx-database.html#queryChangeDetection">
+                <a href="rx-database.html#eventreduce">
             
                     
-                    queryChangeDetection
+                    eventReduce
             
                 </a>
             
@@ -726,6 +731,32 @@
     
         <li class="chapter " data-level="1.5.2.3" data-path="rx-collection.html">
             
+                <a href="rx-collection.html#bulkinsert">
+            
+                    
+                    bulkInsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#bulkremove">
+            
+                    
+                    bulkRemove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.5" data-path="rx-collection.html">
+            
                 <a href="rx-collection.html#newdocument">
             
                     
@@ -737,7 +768,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.4" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.6" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#upsert">
             
@@ -750,7 +781,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.5" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.7" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#atomicupsert">
             
@@ -763,7 +794,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.6" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.8" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#find">
             
@@ -776,7 +807,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.7" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.9" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#findone">
             
@@ -789,7 +820,33 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.8" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.10" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#findbyids">
+            
+                    
+                    findByIds()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.11" data-path="rx-collection.html">
+            
+                <a href="rx-collection.html#findbyids$">
+            
+                    
+                    findByIds$()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.12" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#dump">
             
@@ -802,7 +859,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.9" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.13" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#importdump">
             
@@ -815,7 +872,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.10" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.14" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#sync">
             
@@ -828,7 +885,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.11" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.15" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#remove">
             
@@ -841,7 +898,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.12" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.16" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#destroy">
             
@@ -854,7 +911,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.2.13" data-path="rx-collection.html">
+        <li class="chapter " data-level="1.5.2.17" data-path="rx-collection.html">
             
                 <a href="rx-collection.html#isrxcollection">
             
@@ -998,6 +1055,19 @@
     
         <li class="chapter " data-level="1.6.3.6" data-path="rx-document.html">
             
+                <a href="rx-document.html#atomicpatch">
+            
+                    
+                    atomicPatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
+            
                 <a href="rx-document.html#atomicset">
             
                     
@@ -1009,7 +1079,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.7" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
             
                 <a href="rx-document.html#observe-">
             
@@ -1022,7 +1092,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.8" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
             
                 <a href="rx-document.html#remove">
             
@@ -1035,7 +1105,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.9" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
             
                 <a href="rx-document.html#deleted$">
             
@@ -1048,7 +1118,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.10" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
             
                 <a href="rx-document.html#tojson">
             
@@ -1061,7 +1131,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.11" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
             
                 <a href="rx-document.html#set">
             
@@ -1074,7 +1144,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.12" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
             
                 <a href="rx-document.html#save">
             
@@ -1087,7 +1157,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3.13" data-path="rx-document.html">
+        <li class="chapter " data-level="1.6.3.14" data-path="rx-document.html">
             
                 <a href="rx-document.html#isrxdocument">
             
@@ -1204,6 +1274,19 @@
     
         <li class="chapter " data-level="1.7.7" data-path="rx-query.html">
             
+                <a href="rx-query.html#doesDocumentDataMatch">
+            
+                    
+                    doesDocumentDataMatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7.8" data-path="rx-query.html">
+            
                 <a href="rx-query.html#examples">
             
                     
@@ -1215,7 +1298,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.7.8" data-path="rx-query.html">
+        <li class="chapter " data-level="1.7.9" data-path="rx-query.html">
             
                 <a href="rx-query.html#isrxquery">
             
@@ -1316,7 +1399,7 @@
                 <a href="replication.html">
             
                     
-                    Replication
+                    Replication CouchDB
             
                 </a>
             
@@ -1324,12 +1407,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.15" data-path="query-change-detection.html">
+        <li class="chapter " data-level="1.15" data-path="replication-graphql.html">
             
-                <a href="query-change-detection.html">
+                <a href="replication-graphql.html">
             
                     
-                    QueryChangeDetection
+                    Replication GraphQL
             
                 </a>
             
@@ -1350,7 +1433,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.17" data-path="rx-local-document.html">
+        <li class="chapter " data-level="1.17" data-path="query-cache.html">
+            
+                <a href="query-cache.html">
+            
+                    
+                    QueryCache
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.18" data-path="rx-local-document.html">
             
                 <a href="rx-local-document.html">
             
@@ -1363,7 +1459,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.18" data-path="custom-build.html">
+        <li class="chapter " data-level="1.19" data-path="custom-build.html">
             
                 <a href="custom-build.html">
             
@@ -1376,12 +1472,12 @@
             
         </li>
     
-        <li class="chapter " data-level="1.19" data-path="plugins.html">
+        <li class="chapter " data-level="1.20" data-path="plugins.html">
             
                 <a href="plugins.html">
             
                     
-                    Plugins
+                    Creating Plugins
             
                 </a>
             
@@ -1389,7 +1485,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.20" data-path="adapters.html">
+        <li class="chapter " data-level="1.21" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -1402,7 +1498,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21" >
+        <li class="chapter " data-level="1.22" >
             
                 <span>
             
@@ -1416,7 +1512,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.21.1" data-path="tutorials/typescript.html">
+        <li class="chapter " data-level="1.22.1" data-path="tutorials/typescript.html">
             
                 <a href="tutorials/typescript.html">
             
@@ -1429,7 +1525,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.21.2" data-path="tutorials/server.html">
+        <li class="chapter " data-level="1.22.2" data-path="tutorials/server.html">
             
                 <a href="tutorials/server.html">
             
@@ -1447,7 +1543,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.22" data-path="questions-answers.html">
+        <li class="chapter " data-level="1.23" data-path="questions-answers.html">
             
                 <a href="questions-answers.html">
             
@@ -1460,7 +1556,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.23" data-path="contribute.html">
+        <li class="chapter " data-level="1.24" data-path="contribute.html">
             
                 <a href="contribute.html">
             
@@ -1503,7 +1599,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Replication</a>
+        <a href="." >Replication CouchDB</a>
     </h1>
 </div>
 
@@ -1526,7 +1622,7 @@ You can sync every RxCollection with another RxCollection, a PouchDB-instance or
 It basically does the same as <a href="https://pouchdb.com/guides/replication.html" target="_blank">pouchdb-sync</a> but also adds event-handlers to make sure that change-events will be recognized in the internal event-stream.</p>
 <pre><code class="lang-js">
 <span class="hljs-comment">// you need these plugins to sync</span>
-RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
+addRxPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>)); <span class="hljs-comment">// enable syncing over http (remote database)</span>
 
 <span class="hljs-keyword">const</span> replicationState = myCollection.sync({
     remote: <span class="hljs-string">&apos;http://localhost:10102/db/&apos;</span>, <span class="hljs-comment">// remote database. This can be the serverURL, another RxCollection or a PouchDB-instance</span>
@@ -1542,6 +1638,14 @@ RxDB.plugin(<span class="hljs-built_in">require</span>(<span class="hljs-string"
     query: myCollection.find().where(<span class="hljs-string">&apos;age&apos;</span>).gt(<span class="hljs-number">18</span>) <span class="hljs-comment">// query (optional) only documents that match that query will be synchronised</span>
 });
 </code></pre>
+<h2 id="limitations">Limitations</h2>
+<p>Since CouchDB only allows synchronization through HTTP1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, <a href="https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html" target="_blank">see here</a>).</p>
+<p>Since this limitation is at the <strong>browser</strong> level there are several solutions:</p>
+<ol>
+<li>Use a proxy (ex: HAProxy) between the browser and CouchDB and configure it to use HTTP2.0, since HTTP2.0 doesn&apos;t have this limitation (RECOMMENDED)</li>
+<li>Use only a single database for all entities and set a &quot;type&quot; field for each of the documents</li>
+<li>Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each</li>
+</ol>
 <h2 id="rxreplicationstate">RxReplicationState</h2>
 <p>The method <code>RxCollection.sync()</code> returns a RxReplicationState which can be used to observe events via rxjs-observables and to cancel the replication.</p>
 <h3 id="change">change$</h3>
@@ -1574,12 +1678,41 @@ Only one-time-replications will complete.</p>
 <p>If errors occur during the replication, they will get emitted here.</p>
 <pre><code class="lang-js">replicationState.error$.subscribe(error =&gt; <span class="hljs-built_in">console</span>.dir(error));
 </code></pre>
+<h3 id="awaitinitialreplication">awaitInitialReplication()</h3>
+<p>Returns a <code>Promise</code> that resolves when the initial replication is done and the data is equal to replication goal.
+This only works on non-live replications and when <code>waitForLeadership: false</code></p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> repState = <span class="hljs-keyword">await</span> myCollection.sync({
+  remote: <span class="hljs-string">&apos;http://localhost:8080/db&apos;</span>,
+  waitForLeadership: <span class="hljs-literal">false</span>,
+  options: {
+    live: <span class="hljs-literal">false</span>
+  }
+});
+<span class="hljs-keyword">await</span> repState.awaitInitialReplication();
+</code></pre>
 <h3 id="cancel">cancel()</h3>
 <p>Calling this method will cancel the replication.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">await</span> replicationState.cancel(); <span class="hljs-comment">// cancel() is async</span>
 </code></pre>
+<h2 id="known-problems-and-workarounds">Known problems and workarounds</h2>
+<ul>
+<li>When you do many writes in parallen and replicate them. Your replication might stuck because it reaches the maxSockets value of nodejs. You can increase it by setting<pre><code class="lang-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;http&apos;</span>).globalAgent.maxSockets = <span class="hljs-number">10</span>;
+</code></pre>
+</li>
+<li>Especially when you replicate big attachments, you might get a stuck or slow replication. <a href="https://pouchdb.com/errors.html#replicating_attachments_slow" target="_blank">See</a>. You can solve this be changing the batches configuration.<pre><code class="lang-js"><span class="hljs-keyword">const</span> replicationState = <span class="hljs-keyword">await</span> myCollection.sync({
+remote: <span class="hljs-string">&apos;http://...&apos;</span>,
+options: {
+    retry: <span class="hljs-literal">true</span>,
+    batch_size: <span class="hljs-number">1</span>, <span class="hljs-comment">// only transfer one document per batch</span>
+    batches_limit: <span class="hljs-number">1</span> <span class="hljs-comment">// only one batch in parrallel</span>
+}
+});
+</code></pre>
+</li>
+<li>When you replicate attachments bigger then <code>1mb</code> you might cause the replication to stuck. This is an unsolved problem with pouchdb that requires further analysis. It is recommended to not store attachments bigger then <code>1mb</code> when using the replication.</li>
+</ul>
 <hr>
-<p>If you are new to RxDB, you should continue <a href="query-change-detection.html">here</a></p>
+<p>If you are new to RxDB, you should continue <a href="replication-graphql.html">here</a></p>
 
                                 
                                 </section>
@@ -1612,7 +1745,7 @@ Only one-time-replications will complete.</p>
                 </a>
                 
                 
-                <a href="query-change-detection.html" class="navigation navigation-next " aria-label="Next page: QueryChangeDetection">
+                <a href="replication-graphql.html" class="navigation navigation-next " aria-label="Next page: Replication GraphQL">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -1623,7 +1756,7 @@ Only one-time-replications will complete.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Replication","level":"1.14","depth":1,"next":{"title":"QueryChangeDetection","level":"1.15","depth":1,"path":"query-change-detection.md","ref":"./query-change-detection.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2019-04-05T15:35:13.875Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-07-05T14:42:49.007Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Replication CouchDB","level":"1.14","depth":1,"next":{"title":"Replication GraphQL","level":"1.15","depth":1,"path":"replication-graphql.md","ref":"./replication-graphql.md","articles":[]},"previous":{"title":"LeaderElection","level":"1.13","depth":1,"path":"leader-election.md","ref":"./leader-election.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./gitter.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - Documentation","links":{"sidebar":{"Follow @twitter ":"https://twitter.com/rxdbjs","Chat @gitter ":"https://gitter.im/pubkey/rxdb","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"replication.md","mtime":"2021-02-14T02:20:34.209Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-02-14T02:24:20.088Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -1645,7 +1778,7 @@ Only one-time-replications will complete.</p>
         
     
         
-        <script src="gitbook/gitbook-plugin-scripts/c6361af027a93a41d58227852f7ae965-gitter.js"></script>
+        <script src="gitbook/gitbook-plugin-scripts/5fba4a97b13c90ad3a5e9179941e5a9a-gitter.js"></script>
         
     
         

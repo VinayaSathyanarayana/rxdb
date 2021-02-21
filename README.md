@@ -1,7 +1,7 @@
 <!--
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **8.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/8.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **9.0.0** is now released, read the [ANNOUNCEMENT](./orga/releases/9.0.0.md) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 -->
 
 <p align="center">
@@ -16,7 +16,9 @@
 </p>
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps and NodeJs. Reactive means that you can not only query the current state, but <b>subscribe</b> to all state-changes like the result of a query or even a single field of a document. This is useful for <b>UI-based</b> apps that always display the realtime state to the user. Because RxDB is based on glorious <b>PouchDB</b>, it supports the CouchDB replication-protocol which lets you <b>replicate</b> data between multiple clients and servers in an easy and convenient way.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and NodeJs.
+  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
+  This is great for UI-based <b>realtime</b> applications in way that makes it easy to develop and also has great performance benefits. To replicate data between your clients and server, RxDB provides modules for realtime replication with any <b>CouchDB</b> compliant endpoint and also with custom <b>GraphQL</b> endpoints.
 </p>
 
 
@@ -55,14 +57,14 @@
 | 💻📱  | **Multiplatform support** for browsers, nodejs, electron, cordova, react-native and every other javascript-runtime                                                                                                                      |
 | 📨 | **Reactive** data-handling based on [RxJS](https://github.com/ReactiveX/rxjs)                                                                                                                                                           |
 | 🚣 | **Offline first** let your app still work when the users has no internet                                          
-| 🔄  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant |
+| 🔄  | **Replication** between client and server-data, compatible with ![pouchdb](docs-src/files/icons/pouchdb.png)PouchDB, ![couchdb](docs-src/files/icons/couchdb.png)CouchDB and ![cloudant](docs-src/files/icons/cloudant.png)IBM Cloudant. There is also a plugin for a **GraphQL replication** |
 | 📄  | **Schema-based** with the easy-to-learn standard of [json-schema](https://json-schema.org/)                                                                                                                                                                        |
-| 🍊  | **Mango-Query** exactly like you know from mongoDB and mongoose                                                                                                                                                                         |
+| 🍊  | **Mango-Query** exactly like you know from mongoDB and mongoose  <!-- IMPORTANT: It is really called 'mango' query, do not make a PR to fix this 'typo' https://github.com/cloudant/mango -->                                                                                                                    |
 | 🔐  | **Encryption** of single data-fields to protect your users data                                                                                                                                                                         |
 | 📤📥  | **Import/Export** of the database-state (json), awesome for coding with [TDD](https://en.wikipedia.org/wiki/Test-driven_development)                                                                                                    |
 | 📡  | **Multi-Window** to synchronise data between different browser-windows or nodejs-processes                                                                                                                                              |
 | 💅 | **ORM-capabilities** to easily handle data-code-relations and customize functions of documents and collections                                                                                                                                                                               |
-| 🔷  | Full **TypeScript** support for fast and secure coding                                                                                                                                              |
+| 🔷  | Full **TypeScript** support for fast and secure coding (Requires Typescript v3.8 or higher)                                                                                                                                             |
 
 ## Platform-support
 
@@ -73,17 +75,17 @@ RxDB is made so that you can use **exactly the same code** at
     ![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png)
     ![Edge](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png)
     ![Internet Explorer 11](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png) Browsers
--   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://nodejs.org/en/)
--   ![electron](docs-src/files/icons/electron.png) [Electron](https://electronjs.org/)
--   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://facebook.github.io/react-native/)
+-   ![NodeJS](docs-src/files/icons/nodejs.png) [NodeJS](https://github.com/pubkey/rxdb/tree/master/examples/node)
+-   ![electron](docs-src/files/icons/electron.png) [Electron](https://github.com/pubkey/rxdb/tree/master/examples/electron)
+-   ![react-native](docs-src/files/icons/react-native.png) [React-Native](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
 -   ![cordova](docs-src/files/icons/cordova.png) [Cordova/Phonegap](https://cordova.apache.org/)
 
 We optimized, double-checked and made boilerplates so you can directly start to use RxDB with frameworks like
 
--   ![react](docs-src/files/icons/react.png) [React](https://reactjs.org/)
--   ![angular](docs-src/files/icons/angular.png) [Angular/ng2](https://angular.io/)
--   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://ionicframework.com/)
--   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://vuejs.org/)
+-   ![angular](docs-src/files/icons/angular.png) [Angular](https://github.com/pubkey/rxdb/tree/master/examples/angular)
+-   ![vuejs](docs-src/files/icons/vuejs.png) [Vuejs](https://github.com/pubkey/rxdb/tree/master/examples/vue)
+-   ![react](docs-src/files/icons/react.png) [React](https://github.com/pubkey/rxdb/tree/master/examples/react)
+-   ![ionic](docs-src/files/icons/ionic.png) [Ionic2](https://github.com/pubkey/rxdb/tree/master/examples/ionic2)
 
 ## Quickstart
 
@@ -98,40 +100,17 @@ npm install rxjs --save
 
 ### Import:
 
-<details>
-  <summary>ES7</summary>
-
 ```javascript
-import RxDB from 'rxdb';
-const db = await RxDB.create({
+import { createRxDatabase } from 'rxdb';
+const db = await createRxDatabase({
     name: 'heroesdb',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
+    adapter: 'indexeddb',
+    password: 'myLongAndStupidPassword' // optional
   });                                                       // create database
 
 await db.collection({name: 'heroes', schema: mySchema});    // create collection
 db.heroes.insert({ name: 'Bob' });                          // insert document
 ```
-
-</details>
-
-<details>
-  <summary>ES5</summary>
-
-```javascript
-var RxDB = require('rxdb');
-RxDB.create({
-    name: 'heroesdb',
-    adapter: 'websql',
-    password: 'myLongAndStupidPassword', // optional
-    multiInstance: true                  // default: true
-  })                                                                              // create database
-  .then(function(db) {return db.collection({name: 'heroes', schema: mySchema});}) // create collection
-  .then(function(collection) {collection.insert({name: 'Bob'});})                 // insert document
-```
-
-</details>
 
 ## Feature-Showroom (click to toggle)
 
@@ -236,7 +215,6 @@ const mySchema = {
         },
         secret: {
             type: "string",
-            encrypted: true     // <- this means that the value of this field is stored encrypted
         },
         skills: {
             type: "array",
@@ -255,7 +233,8 @@ const mySchema = {
             }
         }
     },
-    required: ["color"]
+    required: ["color"],
+    encrypted: ["secret"] // <- this means that the value of this field is stored encrypted
 };
 ```
 
@@ -266,14 +245,22 @@ const mySchema = {
   <b>Encryption</b>
   <p>
 
-By setting a schema-field to `encrypted: true`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
+By setting a schema-field to `encrypted`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
 
 </summary>
 
 ```json
-"secret": {
-  "type": "string",
-  "encrypted": true
+{
+  "title": "my schema",
+  "properties": {
+    "secret": {
+      "type": "string",
+      "encrypted": true
+    }
+  },
+  "encrypted": [
+    "secret"
+  ]
 }
 ```
 
@@ -295,7 +282,7 @@ RxDB.plugin(require('pouchdb-adapter-idb'));
 // this creates a database with the indexeddb-adapter
 const database = await RxDB.create({
     name: 'mydatabase',
-    adapter: 'idb' // the name of your adapter
+    adapter: 'indexeddb' // the name of your adapter
 });
 ```
 
@@ -358,7 +345,7 @@ In this example the leader is marked with the crown ♛
   <b>Key-Compression</b>
   <p>
 
-Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB has an internal schema-based key-compression to minimize the size of saved documents.</p>
+Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB uses a schema based [keycompression](https://github.com/pubkey/jsonschema-key-compression) to minimize the size of saved documents. This saves about 40% of used storage.</p>
 
 </summary>
 
@@ -372,7 +359,7 @@ await myCollection.insert({
   stupidLongKey: 5
 });
 
-// RxDB will internally transform it to
+// key compression will internally transform it to
 {
   '|a': 'foo'
   '|b':  'bar'
@@ -380,7 +367,7 @@ await myCollection.insert({
 }
 
 // so instead of 46 chars, the compressed-version has only 28
-// the compression works internally, so you can of course still access values via the original key.names
+// the compression works internally, so you can of course still access values via the original key.names and run normal queries.
 console.log(myDoc.firstName);
 // 'foo'
 ```
@@ -389,12 +376,11 @@ console.log(myDoc.firstName);
 
 <details>
 <summary>
-  <b>QueryChangeDetection</b>
+  <b>EventReduce</b>
   <p>
-    Similar to Meteors <a href="https://github.com/meteor/docs/blob/version-NEXT/long-form/oplog-observe-driver.md">oplog-observe-driver</a>,
-    RxDB has a QueryChangeDetection to optimize observed or reused queries. This makes sure that when you update/insert/remove documents,
+    One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB internally uses the <a href="https://github.com/pubkey/event-reduce">Event-Reduce algorithm</a>. This makes sure that when you update/insert/remove documents,
     the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance-gain
-    with zero cost. The QueryChangeDetection works internally and is currently in <b>beta</b> (disabled by default).
+    with zero cost.
   </p>
 </summary>
 
@@ -419,22 +405,10 @@ anyUser.loggedIn = false;
 await anyUser.save();
 ```
 
-But not with the QueryChangeDetection enabled.
-Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. The QueryChangeDetection not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
+But not with the EventReduce.
+Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. EventReduce not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
 
 </details>
-
-## Browser support
-
-All major evergreen browsers and IE11 are supported. Tests automatically run against Firefox and Chrome, and manually in a VirtualBox for IE11 and Edge.
-
-We soon will switch to [Browserstack](https://www.browserstack.com/) and run automated tests in all major browsers<br/>
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/7760/34738829-7327ddc4-f561-11e7-97e2-2fe0474eaf05.png" width="280px" />
-</div>
-
-As RxDB heavily relies on PouchDB, see [their browser support](https://pouchdb.com/learn.html#browser_support) for more information. Also do keep in mind that different browsers have different storage limits, especially on mobile devices.
 
 ## Getting started
 
@@ -449,10 +423,10 @@ Get started now by [reading the docs](https://rxdb.info/) or exploring the [exam
 -   Follow RxDB on [twitter](https://twitter.com/intent/follow?screen_name=rxdbjs) to not miss the latest enhancements.
 -   Join the chat on [gitter](https://gitter.im/pubkey/rxdb) for discussion.
 
-# Thank you
+## Thank you
 
 A big **Thank you** to every [contributor](https://github.com/pubkey/rxdb/graphs/contributors) of this project.
 
 ## License
 
-[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt)
+[Apache-2.0](https://github.com/pubkey/rxdb/blob/master/LICENSE.txt) 

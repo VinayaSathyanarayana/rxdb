@@ -7,11 +7,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.update = update;
 exports.RxQueryUpdate = RxQueryUpdate;
-exports["default"] = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBUpdatePlugin = exports.prototypes = exports.rxdb = void 0;
 
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
-
-var _util = require("../util.js");
 
 /**
  * this plugin allows delta-updates with mongo-like-syntax
@@ -19,16 +17,10 @@ var _util = require("../util.js");
  * @link https://github.com/lgandecki/modifyjs
  */
 function update(updateObj) {
-  var oldDocData = (0, _util.clone)(this._data);
+  var oldDocData = this._data;
   var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
-/**
- * 
- * @param {*} updateObj 
- * @return {Promise}
- */
-
 
 function RxQueryUpdate(updateObj) {
   return this.exec().then(function (docs) {
@@ -60,8 +52,11 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var RxDBUpdatePlugin = {
+  name: 'update',
   rxdb: rxdb,
   prototypes: prototypes
 };
-exports["default"] = _default;
+exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
+
+//# sourceMappingURL=update.js.map

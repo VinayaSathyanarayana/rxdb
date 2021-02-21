@@ -4,9 +4,9 @@ const path = require('path');
 const url = require('url');
 const database = require('./database');
 
-const RxDB = require('rxdb');
-RxDB.plugin(require('rxdb/plugins/server'));
-RxDB.plugin(require('pouchdb-adapter-memory'));
+const { addRxPlugin } = require('rxdb');
+addRxPlugin(require('rxdb/plugins/server'));
+addRxPlugin(require('pouchdb-adapter-memory'));
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -18,7 +18,10 @@ function createWindow(dbSuffix) {
     const height = 600;
     const w = new BrowserWindow({
         width,
-        height
+        height,
+        webPreferences: {
+            nodeIntegration: true
+        }
     });
 
     w.loadURL(url.format({
@@ -37,7 +40,7 @@ function createWindow(dbSuffix) {
 }
 
 
-app.on('ready', async function() {
+app.on('ready', async function () {
     const dbSuffix = new Date().getTime(); // we add a random timestamp in dev-mode to reset the database on each start
 
     const db = await database.getDatabase(
@@ -50,7 +53,7 @@ app.on('ready', async function() {
      * which is used as sync-goal by page.js
      */
     console.log('start server');
-    db.server({
+    await db.server({
         path: '/db',
         port: 10102,
         cors: true
@@ -69,7 +72,7 @@ app.on('ready', async function() {
     createWindow(dbSuffix);
 });
 
-app.on('window-all-closed', function() {
+app.on('window-all-closed', function () {
     if (process.platform !== 'darwin')
         app.quit();
 });

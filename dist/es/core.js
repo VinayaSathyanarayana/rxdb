@@ -2,36 +2,28 @@
  * this is the main entry-point for custom builds
  * it can be used as standalone but is also used in the batteries-included main-export
  */
-import RxDatabase from './rx-database';
-import { isInstanceOf as isInstanceOfRxSchema } from './rx-schema';
-import RxDocument from './rx-document';
-import { isInstanceOf as isInstanceOfRxQuery } from './rx-query';
-import RxCollection from './rx-collection';
-import QueryChangeDetector from './query-change-detector';
-import addPlugin from './plugin';
-import PouchDB from './pouch-db';
-export var create = RxDatabase.create;
-export var removeDatabase = RxDatabase.removeDatabase;
-export var checkAdapter = RxDatabase.checkAdapter;
-export var plugin = addPlugin;
-export var isRxDatabase = RxDatabase.isInstanceOf;
-export var dbCount = RxDatabase.dbCount;
-export var isRxCollection = RxCollection.isInstanceOf;
-export var isRxDocument = RxDocument.isInstanceOf;
-export var isRxQuery = isInstanceOfRxQuery;
-export var isRxSchema = isInstanceOfRxSchema;
-export default {
-  create: create,
-  removeDatabase: removeDatabase,
-  checkAdapter: checkAdapter,
-  plugin: plugin,
-  dbCount: dbCount,
-  isRxDatabase: isRxDatabase,
-  isRxCollection: isRxCollection,
-  isRxDocument: isRxDocument,
-  isRxQuery: isRxQuery,
-  isRxSchema: isRxSchema,
-  PouchDB: PouchDB,
-  QueryChangeDetector: QueryChangeDetector,
-  RxDatabase: RxDatabase
-};
+import './types/modules/crypto-js.d';
+import './types/modules/graphql-client.d';
+import './types/modules/mocha.parallel.d';
+import './types/modules/modifiyjs.d';
+import './types/modules/pouchdb-selector-core.d';
+import './types/modules/random-token.d';
+export { addRxPlugin } from './plugin';
+export { PouchDB, validateCouchDBString, getBatch, countAllUndeleted } from './pouch-db';
+export { createRxDatabase, removeRxDatabase, checkAdapter, isInstanceOf as isRxDatabase, dbCount, _collectionNamePrimary // used in tests
+} from './rx-database';
+export { isInstanceOf as isRxCollection, create as _createRxCollection // used in tests
+} from './rx-collection';
+export { isInstanceOf as isRxDocument } from './rx-document';
+export { getDocumentOrmPrototype, getDocumentPrototype } from './rx-document-prototype-merge';
+export { isInstanceOf as isRxQuery } from './rx-query';
+export { isInstanceOf as isRxSchema, createRxSchema, RxSchema, getIndexes, normalize, getFinalFields, getPreviousVersions } from './rx-schema';
+export { RxChangeEvent } from './rx-change-event';
+export { getRxStoragePouchDb, getPouchLocation } from './rx-storage-pouchdb';
+export { _clearHook // used in tests
+} from './hooks';
+export { createCrypter // used in tests
+} from './crypter';
+export * from './query-cache';
+export * from './util'; // TODO how to do 'export type * ..' ?
+//# sourceMappingURL=core.js.map

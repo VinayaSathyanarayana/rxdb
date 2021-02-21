@@ -1,0 +1,173 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  all:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: start couchdb container
+        run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
+
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 13.8.0
+
+      - name: install npm dependencies
+        run: npm install
+      
+      - name: build
+        run: npm run build
+      
+      - name: test:typings
+        run: npm run test:typings
+
+      - name: check types
+        run: npm run check-types
+
+      - name: test:deps
+        run: npm run test:deps
+
+      - name: test:circular
+        run: npm run test:circular
+
+      - name: lint
+        run: npm run lint
+        
+      - name: npm run test:node
+        run: npm run test:node
+  
+      - name: npm run test:fast
+        run: npm run test:fast
+
+       # in the past we had tests that failed randomly
+       # to prevent this we run the tests in fast-mode 10 times
+      - name: unit tests 10 times
+        run: for i in `seq 10`; do npm run test:fast; done
+
+      - name: npm run test:browser
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./ #optional
+          run: npm run test:browser
+        
+      - name: npm run test:couchdb
+        run: npm run test:couchdb
+        
+      - name: npm run test:performance
+        run: npm run test:performance
+
+      - name: measure build size
+        run: npm run build:size
+        
+      - name: test rollup build
+        run: npm run build:rollup
+
+      - name: test tutorials
+        run: npm run build && (cd ./test/tutorials/ && npm install && npm test)
+      
+      - name: angular build
+        working-directory: ./examples/angular
+        run: |
+          npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
+
+      - name: angular test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/angular #optional
+          run: npm run test:build
+
+      - name: angular test ssr
+        working-directory: ./examples/angular
+        run: npm run test:ssr
+
+
+      - name: vue build
+        run: |
+          cd ./examples/vue && npm install > "/dev/null" 2>&1
+          npm run lint && npm run build
+        
+      - name: vue test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/vue
+          run: npm run test
+
+      - name: electron install
+        run: cd ./examples/electron && npm install > "/dev/null" 2>&1
+
+      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
+      #- name: electron test
+      #  uses: GabrielBB/xvfb-action@v1.4
+      #  with:
+      #    working-directory: ./examples/electron
+      #    # retry 3 times
+      #    run: npm run test || npm run test || npm run test
+
+      - name: electron-remote install
+        run: cd ./examples/electron-remote && npm install > "/dev/null" 2>&1
+
+      # TODO these tests randomly fail with a page crash, add a retry with timeout or sth
+      #- name: electron-remote test
+      #  uses: GabrielBB/xvfb-action@v1.4
+      #  with:
+      #    working-directory: ./examples/electron-remote
+      #    # retry 3 times
+      #    run: npm run test || npm run test || npm run test
+
+      - name: react install
+        run: |
+          cd ./examples/react
+          npm install > "/dev/null" 2>&1
+          npm run build
+
+      - name: react test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/react
+          run: npm run test:build
+
+      - name: react-native
+        run: |
+          cd ./examples/react-native
+          npx yarn@1.13.0 install > "/dev/null" 2>&1
+          npm run test
+          echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+          sudo sysctl -p
+          npm run test:bundle
+
+      - name: node example
+        run: cd ./examples/node && npm install > "/dev/null" 2>&1 && npm run test
+
+      - name: graphql build
+        run: cd ./examples/graphql && npm install > "/dev/null" 2>&1 && npm run build
+
+      - name: graphql test
+        uses: GabrielBB/xvfb-action@v1.4
+        with:
+          working-directory: ./examples/graphql
+          run: npm run test:ci

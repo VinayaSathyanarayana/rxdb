@@ -1,19 +1,16 @@
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
-import { hash } from '../util';
-import { createRxQuery } from '../rx-query';
+import { hash, now } from '../util';
+import { createRxQuery, _getDefaultQuery } from '../rx-query';
 import { newRxError } from '../rx-error';
-import { createChangeEvent } from '../rx-change-event';
-/**
- * @return {Promise}
- */
+import { createInsertEvent } from '../rx-change-event';
 
-var dumpRxDatabase = function dumpRxDatabase() {
+function dumpRxDatabase() {
   var _this = this;
 
   var decrypted = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-  var collections = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var collections = arguments.length > 1 ? arguments[1] : undefined;
   var json = {
     name: this.name,
     instanceToken: this.token,
@@ -40,7 +37,7 @@ var dumpRxDatabase = function dumpRxDatabase() {
     json.collections = cols;
     return json;
   });
-};
+}
 
 var importDumpRxDatabase = function importDumpRxDatabase(dump) {
   var _this2 = this;
@@ -82,21 +79,18 @@ var dumpRxCollection = function dumpRxCollection() {
     json.encrypted = true;
   }
 
-  var query = createRxQuery('find', {}, this);
-  return this._pouchFind(query, null, encrypted).then(function (docs) {
+  var query = createRxQuery('find', _getDefaultQuery(this), this);
+  return this._pouchFind(query, undefined, encrypted).then(function (docs) {
     json.docs = docs.map(function (docData) {
       delete docData._rev;
+      delete docData._attachments;
       return docData;
     });
     return json;
   });
 };
-/**
- * @return {Promise}
- */
 
-
-var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
+function importDumpRxCollection(exportedJSON) {
   var _this3 = this;
 
   // check schemaHash
@@ -115,25 +109,31 @@ var importDumpRxCollection = function importDumpRxCollection(exportedJSON) {
     });
   }
 
-  var importFns = exportedJSON.docs // decrypt
+  var docs = exportedJSON.docs // decrypt
   .map(function (doc) {
     return _this3._crypter.decrypt(doc);
   }) // validate schema
   .map(function (doc) {
     return _this3.schema.validate(doc);
-  }) // import
+  }) // transform
   .map(function (doc) {
-    return _this3._pouchPut(doc).then(function () {
-      var primary = doc[_this3.schema.primaryPath]; // emit changeEvents
-
-      var emitEvent = createChangeEvent('INSERT', _this3.database, _this3, null, doc);
-      emitEvent.data.doc = primary;
+    return _this3._handleToPouch(doc);
+  });
+  var startTime;
+  return this.database.lockedRun( // write to disc
+  function () {
+    startTime = now();
+    return _this3.pouch.bulkDocs(docs);
+  }).then(function () {
+    var endTime = now();
+    docs.forEach(function (doc) {
+      // emit change events
+      var emitEvent = createInsertEvent(_this3, doc, startTime, endTime);
 
       _this3.$emit(emitEvent);
     });
   });
-  return Promise.all(importFns);
-};
+}
 
 export var rxdb = true;
 export var prototypes = {
@@ -147,8 +147,10 @@ export var prototypes = {
   }
 };
 export var overwritable = {};
-export default {
+export var RxDBJsonDumpPlugin = {
+  name: 'json-dump',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable
 };
+//# sourceMappingURL=json-dump.js.map

@@ -3,60 +3,53 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports.overwritable = void 0;
 
-var _rxError = require("./rx-error");
+var _util = require("./util");
 
 /**
  * functions that can or should be overwritten by plugins
  */
-var funs = {
+var overwritable = {
+  /**
+   * if this method is overwritte with one
+   * that returns true, we do additional checks
+   * which help the developer but have bad performance
+   */
+  isDevMode: function isDevMode() {
+    return false;
+  },
+
   /**
    * validates if a password can be used
    * @overwritten by plugin (optional)
-   * @param  {any} password
    * @throws if password not valid
-   * @return {void}
    */
-  validatePassword: function validatePassword() {
-    throw (0, _rxError.pluginMissing)('encryption');
+  validatePassword: function validatePassword(_password) {
+    throw (0, _util.pluginMissing)('encryption');
   },
 
   /**
    * creates a key-compressor for the given schema
-   * @param  {RxSchema} schema
-   * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor() {
-    throw (0, _rxError.pluginMissing)('key-compression');
-  },
-
-  /**
-   * creates a leader-elector for the given database
-   * @param  {RxDatabase} database
-   * @return {LeaderElector}
-   */
-  createLeaderElector: function createLeaderElector() {
-    throw (0, _rxError.pluginMissing)('leaderelection');
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
+    throw (0, _util.pluginMissing)('key-compression');
   },
 
   /**
    * checks if the given adapter can be used
-   * @return {any} adapter
    */
-  checkAdapter: function checkAdapter() {
-    throw (0, _rxError.pluginMissing)('adapter-check');
+  checkAdapter: function checkAdapter(_adapter) {
+    throw (0, _util.pluginMissing)('adapter-check');
   },
 
   /**
    * overwritte to map error-codes to text-messages
-   * @param  {string} message
-   * @return {string}
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
-    // TODO better text with link
-    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
+    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
-var _default = funs;
-exports["default"] = _default;
+exports.overwritable = overwritable;
+
+//# sourceMappingURL=overwritable.js.map

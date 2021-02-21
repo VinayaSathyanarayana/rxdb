@@ -5,14 +5,11 @@ import _wrapNativeSuper from "@babel/runtime/helpers/wrapNativeSuper";
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import { ucfirst } from './util';
-import overwritable from './overwritable';
+import { overwritable } from './overwritable';
+
 /**
  * transform an object of parameters to a presentable string
- * @param  {any} parameters
- * @return {string}
  */
-
 function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
@@ -21,7 +18,7 @@ function parametersToString(parameters) {
     var paramStr = '[object Object]';
 
     try {
-      paramStr = JSON.stringify(parameters[k], function (k, v) {
+      paramStr = JSON.stringify(parameters[k], function (_k, v) {
         return v === undefined ? null : v;
       }, 2);
     } catch (e) {}
@@ -32,20 +29,18 @@ function parametersToString(parameters) {
   return ret;
 }
 
-function messageForError(message, parameters) {
-  return 'RxError:' + '\n' + message + '\n' + parametersToString(parameters);
+function messageForError(message, code, parameters) {
+  return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 
-export var RxError =
-/*#__PURE__*/
-function (_Error) {
+export var RxError = /*#__PURE__*/function (_Error) {
   _inheritsLoose(RxError, _Error);
 
   function RxError(code, message) {
     var _this;
 
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var mes = messageForError(message, parameters);
+    var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
     _this.code = code;
     _this.message = mes;
@@ -64,7 +59,7 @@ function (_Error) {
   _createClass(RxError, [{
     key: "name",
     get: function get() {
-      return 'RxError';
+      return 'RxError (' + this.code + ')';
     }
   }, {
     key: "typeError",
@@ -74,17 +69,15 @@ function (_Error) {
   }]);
 
   return RxError;
-}(_wrapNativeSuper(Error));
-export var RxTypeError =
-/*#__PURE__*/
-function (_TypeError) {
+}( /*#__PURE__*/_wrapNativeSuper(Error));
+export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _inheritsLoose(RxTypeError, _TypeError);
 
   function RxTypeError(code, message) {
     var _this2;
 
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var mes = messageForError(message, parameters);
+    var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
     _this2.message = mes;
@@ -103,7 +96,7 @@ function (_TypeError) {
   _createClass(RxTypeError, [{
     key: "name",
     get: function get() {
-      return 'RxError';
+      return 'RxTypeError (' + this.code + ')';
     }
   }, {
     key: "typeError",
@@ -113,17 +106,18 @@ function (_TypeError) {
   }]);
 
   return RxTypeError;
-}(_wrapNativeSuper(TypeError));
-export function pluginMissing(pluginKey) {
-  return new RxError('PU', "You are using a function which must be overwritten by a plugin.\n        You should either prevent the usage of this function or add the plugin via:\n          - es5-require:\n            RxDB.plugin(require('rxdb/plugins/" + pluginKey + "'))\n          - es6-import:\n            import " + ucfirst(pluginKey) + "Plugin from 'rxdb/plugins/" + pluginKey + "';\n            RxDB.plugin(" + ucfirst(pluginKey) + "Plugin);\n        ", {
-    pluginKey: pluginKey
-  });
-} // const errorKeySearchLink = key => 'https://github.com/pubkey/rxdb/search?q=' + key + '+path%3Asrc%2Fmodules';
-// const verboseErrorModuleLink = 'https://pubkey.github.io/rxdb/custom-builds.html#verbose-error';
-
-export var newRxError = function newRxError(code, parameters) {
+}( /*#__PURE__*/_wrapNativeSuper(TypeError));
+export function newRxError(code, parameters) {
   return new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
-};
-export var newRxTypeError = function newRxTypeError(code, parameters) {
+}
+export function newRxTypeError(code, parameters) {
   return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
-};
+}
+export function isPouchdbConflictError(err) {
+  if (err.parameters && err.parameters.pouchDbError && err.parameters.pouchDbError.status === 409) {
+    return true;
+  } else {
+    return false;
+  }
+}
+//# sourceMappingURL=rx-error.js.map

@@ -1,86 +1,102 @@
-import _createClass from "@babel/runtime/helpers/createClass";
-
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
  */
-import { hash } from './util';
-export var RxChangeEvent =
-/*#__PURE__*/
-function () {
-  function RxChangeEvent(data) {
-    this.data = data;
+export var RxChangeEvent = /*#__PURE__*/function () {
+  function RxChangeEvent(operation, documentId, documentData, databaseToken, collectionName, isLocal, startTime, endTime, previousData, rxDocument) {
+    this.operation = operation;
+    this.documentId = documentId;
+    this.documentData = documentData;
+    this.databaseToken = databaseToken;
+    this.collectionName = collectionName;
+    this.isLocal = isLocal;
+    this.startTime = startTime;
+    this.endTime = endTime;
+    this.previousData = previousData;
+    this.rxDocument = rxDocument;
   }
 
   var _proto = RxChangeEvent.prototype;
 
+  _proto.isIntern = function isIntern() {
+    if (this.collectionName && this.collectionName.charAt(0) === '_') {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   _proto.toJSON = function toJSON() {
     var ret = {
-      op: this.data.op,
-      t: this.data.t,
-      db: this.data.db,
-      it: this.data.it,
-      isLocal: this.data.isLocal
+      operation: this.operation,
+      documentId: this.documentId,
+      documentData: this.documentData,
+      previousData: this.previousData ? this.previousData : undefined,
+      databaseToken: this.databaseToken,
+      collectionName: this.collectionName,
+      isLocal: this.isLocal,
+      startTime: this.startTime,
+      endTime: this.endTime
     };
-    if (this.data.col) ret.col = this.data.col;
-    if (this.data.doc) ret.doc = this.data.doc;
-    if (this.data.v) ret.v = this.data.v;
     return ret;
   };
 
-  _proto.isIntern = function isIntern() {
-    if (this.data.col && this.data.col.charAt(0) === '_') return true;
-    return false;
-  };
+  _proto.toEventReduceChangeEvent = function toEventReduceChangeEvent() {
+    switch (this.operation) {
+      case 'INSERT':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: this.documentData,
+          previous: null
+        };
 
-  _proto.isSocket = function isSocket() {
-    if (this.data.col && this.data.col === '_socket') return true;
-    return false;
-  };
+      case 'UPDATE':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: this.documentData,
+          previous: this.previousData ? this.previousData : 'UNKNOWN'
+        };
 
-  _createClass(RxChangeEvent, [{
-    key: "hash",
-    get: function get() {
-      if (!this._hash) this._hash = hash(this.data);
-      return this._hash;
+      case 'DELETE':
+        return {
+          operation: this.operation,
+          id: this.documentId,
+          doc: null,
+          previous: this.previousData
+        };
     }
-  }]);
+  };
 
   return RxChangeEvent;
 }();
-export function changeEventfromJSON(data) {
-  return new RxChangeEvent(data);
-}
-export function changeEventfromPouchChange(changeDoc, collection) {
-  var op = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
-  if (changeDoc._deleted) op = 'REMOVE'; // decompress / primarySwap
+export function changeEventfromPouchChange(changeDoc, collection, startTime, // time when the event was streamed out of pouchdb
+endTime) {
+  var operation = changeDoc._rev.startsWith('1-') ? 'INSERT' : 'UPDATE';
 
-  changeDoc = collection._handleFromPouch(changeDoc);
-  var data = {
-    op: op,
-    t: new Date().getTime(),
-    db: 'remote',
-    col: collection.name,
-    it: collection.database.token,
-    doc: changeDoc[collection.schema.primaryPath],
-    v: changeDoc
-  };
-  return new RxChangeEvent(data);
+  if (changeDoc._deleted) {
+    operation = 'DELETE';
+  } // decompress / primarySwap
+
+
+  var doc = collection._handleFromPouch(changeDoc);
+
+  var documentId = doc[collection.schema.primaryPath];
+  var cE = new RxChangeEvent(operation, documentId, doc, collection.database.token, collection.name, false, startTime, endTime);
+  return cE;
 }
-export function createChangeEvent(op, database, collection, doc, value) {
-  var isLocal = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
-  var data = {
-    op: op,
-    t: new Date().getTime(),
-    db: database.name,
-    it: database.token,
-    isLocal: isLocal
-  };
-  if (collection) data.col = collection.name;
-  if (doc) data.doc = doc.primary;
-  if (value) data.v = value;
-  return new RxChangeEvent(data);
+export function createInsertEvent(collection, docData, startTime, endTime, doc) {
+  var ret = new RxChangeEvent('INSERT', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, null, doc);
+  return ret;
+}
+export function createUpdateEvent(collection, docData, previous, startTime, endTime, rxDocument) {
+  return new RxChangeEvent('UPDATE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
+}
+export function createDeleteEvent(collection, docData, previous, startTime, endTime, rxDocument) {
+  return new RxChangeEvent('DELETE', docData[collection.schema.primaryPath], docData, collection.database.token, collection.name, false, startTime, endTime, previous, rxDocument);
 }
 export function isInstanceOf(obj) {
   return obj instanceof RxChangeEvent;
 }
+//# sourceMappingURL=rx-change-event.js.map

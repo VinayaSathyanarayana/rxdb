@@ -8,7 +8,7 @@ To install the latest release of `rxdb` and its dependencies and save it to your
 
 ## peer-dependency
 
-You also need to install the peer-dependency `rxjs` if you not have installed it before.
+You also need to install the peer-dependency `rxjs` if you have not installed it before.
 
 `npm i rxjs --save`
 
@@ -20,8 +20,20 @@ RxDB is coded with es8 and transpiled to es5\. This means you have to install [p
 
 If you need polyfills, you have to import them in your code.
 
-```js
-require('@babel/polyfill');
+```typescript
+import '@babel/polyfill';
+```
+
+## polyfill global
+
+When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific global variable that is not added to browser runtimes by some bundlers.
+You have to add them by your own, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
+
+```ts
+(window as any).global = window;
+(window as any).process = {
+    env: { DEBUG: undefined },
+};
 ```
 
 ## Latest
@@ -40,22 +52,12 @@ Replace `commitHash` with the hash of the latest [build-commit](https://github.c
 
 To import `rxdb`, add this to your javascript file:
 
-```javascript
-// es6
-import RxDB from 'rxdb';
-
-// CommonJS
-var RxDB = require('rxdb');
-```
-
-If you have not included es8-polyfills, you also have to import `babel-polyfill`.
-
-```javascript
-// es6
-import 'babel-polyfill';
-
-// CommonJS
-require('babel-polyfill');
+```typescript
+import {
+  createRxDatabase,
+  RxDatabase
+  /* ... */
+} from 'rxdb';
 ```
 
 --------------------------------------------------------------------------------

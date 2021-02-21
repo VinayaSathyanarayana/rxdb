@@ -8,8 +8,10 @@ const heroesList = document.querySelector('#heroes-list');
 
 const syncURL = 'http://localhost:10102/db/heroes';
 
-const RxDB = require('rxdb');
-RxDB.plugin(require('pouchdb-adapter-idb'));
+const {
+    addRxPlugin
+} = require('rxdb');
+addRxPlugin(require('pouchdb-adapter-idb'));
 
 async function run() {
     /**
@@ -38,9 +40,9 @@ async function run() {
      */
     db.heroes.find()
         .sort({
-            name: 1
+            name: 'asc'
         })
-        .$.subscribe(function(heroes) {
+        .$.subscribe(function (heroes) {
             if (!heroes) {
                 heroesList.innerHTML = 'Loading..';
                 return;
@@ -58,7 +60,7 @@ async function run() {
                 .reduce((pre, cur) => pre += cur, '');
         });
 
-    window.addHero = async function() {
+    window.addHero = async function () {
         const name = document.querySelector('input[name="name"]').value;
         const color = document.querySelector('input[name="color"]').value;
         const obj = {

@@ -31,18 +31,17 @@ In this example-schema we define a hero-collection with the following settings:
         },
         "healthpoints": {
             "type": "number",
-            "min": 0,
-            "max": 100
+            "minimum": 0,
+            "maximum": 100
         },
         "secret": {
-            "type": "string",
-            "encrypted": true
+            "type": "string"
         },
         "birthyear": {
             "type": "number",
             "final": true,
-            "min": 1900,
-            "max": 2050
+            "minimum": 1900,
+            "maximum": 2050
         },
         "skills": {
             "type": "array",
@@ -62,6 +61,7 @@ In this example-schema we define a hero-collection with the following settings:
         }
     },
     "required": ["color"],
+    "encrypted": ["secret"],
     "attachments": {
         "encrypted": true
     }
@@ -71,9 +71,10 @@ In this example-schema we define a hero-collection with the following settings:
 ## Create a collection with the schema
 
 ```javascript
-await myDatabase.collection({
-  name: 'heroes',
-  schema: myHeroSchema
+await myDatabase.addCollections({
+    heroes: {
+        schema: myHeroSchema
+    }
 });
 console.dir(myDatabase.heroes.name);
 // heroes
@@ -87,7 +88,11 @@ When the version is greater than 0, you have to provide the migrationStrategies 
 ## keyCompression
 
 Since version `8.0.0`, the keyCompression is disabled by default. If you have a huge amount of documents it makes sense to enable the keyCompression and save disk-space.
-Notice that `keyCompression` can only be used on the **top-level** of a schema.
+`keyCompression` can only be used on the **top-level** of a schema.
+
+**Notice:** When you use `keyCompression` together with the graphql replication, you must ensure that direct non-RxDB writes to the remote database must also write compressed documents. Therefore it is not recommended to enable `keyCompression` for that use case.
+
+
 
 ```javascript
 const mySchema = {
@@ -110,8 +115,6 @@ const mySchema = {
 
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
-To add a simple index, add `index: true` inside field options.
-To add compound-indexes, add them in an array to a `compoundIndexes`-field at the top-level of the schema-definition.
 
 Index is only allowed on field types `string`, `integer` and `number`
 
@@ -125,18 +128,30 @@ const schemaWithIndexes = {
   type: 'object',
   properties: {
       firstName: {
-          type: 'string',
-          index: true       // <- an index for firstName will now be created
+          type: 'string'
       },
       lastName: {
           type: 'string'
       },
       familyName: {
           type: 'string'
+      },
+      creditCards: {
+          type: 'array',
+          items: {
+              type: 'object',
+              properties: {
+                    cvc: {
+                        type: 'number'
+                    }
+              }
+          }       
       }
   },
-  compoundIndexes: [
-      ['lastName', 'familyName']   // <- this will create a compound-index for these two fields
+  indexes: [
+    'firstName', // <- this will create a simple index for the `firstName` field
+    'creditCards.[].cvc',
+    ['lastName', 'familyName'] // <- this will create a compound-index for these two fields
   ]
 };
 ```
@@ -198,14 +213,21 @@ const schemaWithFinalAge = {
 
 ## encryption
 
-By setting a field to `encrypted: true` it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
+By adding a field to the `encrypted` list, it will be stored encrypted inside of the data-store. The encryption will run internally, so when you get the `RxDocument`, you can access the unencrypted value.
 You can set all fields to be encrypted, even nested objects. You can not run queries over encrypted fields.
+The password used for encryption is set during database creation. [See RxDatabase](./rx-database.md#password).
 
-```json
-"mySecretField": {
-    "type": "string",
-    "encrypted": true
-},
+```js
+const schemaWithDefaultAge = {
+  version: 0,
+  type: 'object',
+  properties: {
+      secret: {
+          type: 'string'
+      },
+  },
+  encrypted: ['secret']
+};
 ```
 
 

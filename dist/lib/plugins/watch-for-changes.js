@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.watchForChanges = watchForChanges;
-exports["default"] = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBWatchForChangesPlugin = exports.prototypes = exports.rxdb = void 0;
 
 var _rxjs = require("rxjs");
 
@@ -53,15 +53,14 @@ function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
  */
 
 
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-  // wait 2 ticks and 20 ms to give the internal event-handling time to run
+
+  var startTime = (0, _util.now)();
+  var endTime = (0, _util.now)(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return (0, _util.promiseWait)(20).then(function () {
     return (0, _util.nextTick)();
@@ -70,8 +69,11 @@ function _handleSingleChange(collection, change) {
   }).then(function () {
     var docData = change.doc; // already handled by internal event-stream
 
-    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection);
+    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+      return false;
+    }
+
+    var cE = (0, _rxChangeEvent.changeEventfromPouchChange)(docData, collection, startTime, endTime);
     collection.$emit(cE);
     return true;
   });
@@ -85,8 +87,11 @@ var prototypes = {
   }
 };
 exports.prototypes = prototypes;
-var _default = {
+var RxDBWatchForChangesPlugin = {
+  name: 'watch-for-changes',
   rxdb: rxdb,
   prototypes: prototypes
 };
-exports["default"] = _default;
+exports.RxDBWatchForChangesPlugin = RxDBWatchForChangesPlugin;
+
+//# sourceMappingURL=watch-for-changes.js.map

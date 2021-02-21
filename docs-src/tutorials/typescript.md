@@ -5,7 +5,7 @@
 In this tutorial you learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several ORM-methods, fully typed!
 
-RxDB directly comes with it's typings and you do not have to install anything else.
+RxDB directly comes with it's typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
 Our way to go is
 
 - First define how the documents look like
@@ -17,11 +17,12 @@ Our way to go is
 First you import the types from RxDB.
 
 ```typescript
-import RxDB, {
+import {
+    createRxDatabase,
     RxDatabase,
     RxCollection,
     RxJsonSchema,
-    RxDocument
+    RxDocument,
 } from 'rxdb';
 ```
 
@@ -89,7 +90,7 @@ Now that we have declare all our types, we can use them.
 /**
  * create database and collections
  */
-const myDatabase: MyDatabase = await RxDB.create<MyDatabaseCollections>({
+const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
     name: 'mydb',
     adapter: 'memory'
 });
@@ -131,19 +132,20 @@ const heroCollectionMethods: HeroCollectionMethods = {
     }
 };
 
-await myDatabase.collection({
-    name: 'heroes',
-    schema: heroSchema,
-    methods: heroDocMethods,
-    statics: heroCollectionMethods
+await myDatabase.addCollections({
+    heroes: {
+        schema: heroSchema,
+        methods: heroDocMethods,
+        statics: heroCollectionMethods
+    }
 });
 
-// add a preInsert-hook
+// add a postInsert-hook
 myDatabase.heroes.postInsert(
     function myPostInsertHook(
         this: HeroCollection, // own collection is bound to the scope
-        docData, // documents data
-        doc // RxDocument
+        docData: HeroDocType, // documents data
+        doc: HeroDocument // RxDocument
     ) {
         console.log('insert to ' + this.name + '-collection: ' + doc.firstName);
     },
@@ -155,7 +157,7 @@ myDatabase.heroes.postInsert(
  */
 
 // insert a document
-const doc: HeroDocument = await myDatabase.heroes.insert({
+const hero: HeroDocument = await myDatabase.heroes.insert({
     passportId: 'myId',
     firstName: 'piotr',
     lastName: 'potter',
@@ -163,10 +165,10 @@ const doc: HeroDocument = await myDatabase.heroes.insert({
 });
 
 // access a property
-console.log(doc.firstName);
+console.log(hero.firstName);
 
 // use a orm method
-doc.scream('AAH!');
+hero.scream('AAH!');
 
 // use a static orm method from the collection
 const amount: number = await myDatabase.heroes.countAllDocuments();

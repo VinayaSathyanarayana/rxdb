@@ -4,25 +4,31 @@
  * ensure it is also changed in /docs-src/tutorials/server.md
  */
 
-import RxDB from 'rxdb';
+import {
+    addRxPlugin,
+    createRxDatabase
+} from 'rxdb';
 import * as MemoryAdapter from 'pouchdb-adapter-memory';
-RxDB.plugin(MemoryAdapter);
+addRxPlugin(MemoryAdapter);
 
-import RxDBServerPlugin from 'rxdb/plugins/server';
-RxDB.plugin(RxDBServerPlugin);
+import { RxDBServerPlugin } from 'rxdb/plugins/server';
+addRxPlugin(RxDBServerPlugin);
 
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
-RxDB.plugin(PouchHttpPlugin);
+addRxPlugin(PouchHttpPlugin);
 
 import AsyncTestUtil from 'async-test-util';
 import * as request from 'request-promise-native';
 import * as assert from 'assert';
 
+import * as os from 'os';
+import * as path from 'path';
+
 async function run() {
 
 
     // create database
-    const db = await RxDB.create({
+    const db = await createRxDatabase({
         name: 'mydb',
         adapter: 'memory'
     });
@@ -56,7 +62,12 @@ async function run() {
     const serverState = db.server({
         path: '/db',
         port: 3000,
-        cors: true
+        cors: true,
+        pouchdbExpressOptions: {
+            inMemoryConfig: true, // do not write a config.json
+            // save logs in tmp folder
+            logPath: path.join(os.tmpdir(), 'rxdb-server-log.txt')
+        }
     });
     console.log('You can now open http://localhost:3000/db');
     // and should see something like '{"express-pouchdb":"Welcome!","version":"4.1.0","pouchdb-adapters":["memory"],"vendor":{"name":"PouchDB authors","version":"4.1.0"},"uuid":"b2de36bf-7d4f-4ad1-89a4-da08ec0de227"}'
@@ -68,12 +79,12 @@ async function run() {
     // check access to path
     const gotJson = await request(colUrl);
     const got = JSON.parse(gotJson);
-    assert.equal(got.doc_count, 1);
+    assert.strictEqual(got.doc_count, 1);
 
     /**
      * on the client
      */
-    const clientDB = await RxDB.create({
+    const clientDB = await createRxDatabase({
         name: 'clientdb',
         adapter: 'memory'
     });

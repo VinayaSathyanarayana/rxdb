@@ -1,97 +1,111 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import objectPath from 'object-path';
-import { clone, trimDots, getHeightOfRevision, toPromise } from './util';
-import { createChangeEvent } from './rx-change-event';
-import { newRxError, newRxTypeError, pluginMissing } from './rx-error';
-import { runPluginHooks } from './hooks';
 import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-export function createRxDocumentConstructor() {
-  var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
-
-  var constructor = function RxDocument(collection, jsonData) {
-    this.collection = collection; // if true, this is a temporary document
-
-    this._isTemporary = false; // assume that this is always equal to the doc-data in the database
-
-    this._dataSync$ = new BehaviorSubject(clone(jsonData));
-    this._deleted$ = new BehaviorSubject(false);
-    this._atomicQueue = Promise.resolve();
-    /**
-     * because of the prototype-merge,
-     * we can not use the native instanceof operator
-     */
-
-    this.isInstanceOfRxDocument = true;
-  };
-
-  constructor.prototype = proto;
-  return constructor;
-}
+import { clone, trimDots, getHeightOfRevision, pluginMissing, now, nextTick } from './util';
+import { createUpdateEvent, createDeleteEvent } from './rx-change-event';
+import { newRxError, newRxTypeError, isPouchdbConflictError } from './rx-error';
+import { runPluginHooks } from './hooks';
 export var basePrototype = {
+  /**
+   * TODO
+   * instead of appliying the _this-hack
+   * we should make these accesors functions instead of getters.
+   */
   get _data() {
+    var _this = this;
     /**
      * Might be undefined when vuejs-devtools are used
      * @link https://github.com/pubkey/rxdb/issues/1126
      */
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._dataSync$.getValue();
+
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._dataSync$.getValue();
   },
 
   get primaryPath() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this.collection.schema.primaryPath;
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this.collection.schema.primaryPath;
   },
 
   get primary() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._data[this.primaryPath];
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._data[_this.primaryPath];
   },
 
   get revision() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._data._rev;
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._data._rev;
   },
 
   get deleted$() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._deleted$.asObservable();
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._deleted$.asObservable();
   },
 
   get deleted() {
-    if (!this.isInstanceOfRxDocument) return undefined;
-    return this._deleted$.getValue();
+    var _this = this;
+
+    if (!_this.isInstanceOfRxDocument) {
+      return undefined;
+    }
+
+    return _this._deleted$.getValue();
   },
 
   /**
    * returns the observable which emits the plain-data of this document
-   * @return {Observable}
    */
   get $() {
-    return this._dataSync$.asObservable();
+    var _this = this;
+
+    return _this._dataSync$.asObservable();
   },
 
-  /**
-   * @param {ChangeEvent}
-   */
   _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.data.doc !== this.primary) return; // ensure that new _rev is higher then current
+    if (changeEvent.documentId !== this.primary) return; // ensure that new _rev is higher then current
 
-    var newRevNr = getHeightOfRevision(changeEvent.data.v._rev);
+    var newRevNr = getHeightOfRevision(changeEvent.documentData._rev);
     var currentRevNr = getHeightOfRevision(this._data._rev);
     if (currentRevNr > newRevNr) return;
 
-    switch (changeEvent.data.op) {
+    switch (changeEvent.operation) {
       case 'INSERT':
         break;
 
       case 'UPDATE':
-        var newData = clone(changeEvent.data.v);
+        var newData = changeEvent.documentData;
 
-        this._dataSync$.next(clone(newData));
+        this._dataSync$.next(newData);
 
         break;
 
-      case 'REMOVE':
+      case 'DELETE':
         // remove from docCache to assure new upserted RxDocuments will be a new instance
         this.collection._docCache["delete"](this.primary);
 
@@ -103,7 +117,6 @@ export var basePrototype = {
 
   /**
    * emits the changeEvent to the upper instance (RxCollection)
-   * @param  {RxChangeEvent} changeEvent
    */
   $emit: function $emit(changeEvent) {
     return this.collection.$emit(changeEvent);
@@ -111,8 +124,6 @@ export var basePrototype = {
 
   /**
    * returns observable of the value of the given path
-   * @param {string} path
-   * @return {Observable}
    */
   get$: function get$(path) {
     if (path.includes('.item.')) {
@@ -139,17 +150,19 @@ export var basePrototype = {
 
     return this._dataSync$.pipe(map(function (data) {
       return objectPath.get(data, path);
-    }), distinctUntilChanged()).asObservable();
+    }), distinctUntilChanged());
   },
 
   /**
    * populate the given path
-   * @param  {string}  path
-   * @return {Promise<RxDocument>}
    */
   populate: function populate(path) {
     var schemaObj = this.collection.schema.getSchemaByObjectPath(path);
     var value = this.get(path);
+
+    if (!value) {
+      return Promise.resolve(null);
+    }
 
     if (!schemaObj) {
       throw newRxError('DOC5', {
@@ -174,15 +187,18 @@ export var basePrototype = {
       });
     }
 
-    if (schemaObj.type === 'array') return Promise.all(value.map(function (id) {
-      return refCollection.findOne(id).exec();
-    }));else return refCollection.findOne(value).exec();
+    if (schemaObj.type === 'array') {
+      return refCollection.findByIds(value).then(function (res) {
+        var valuesIterator = res.values();
+        return Array.from(valuesIterator);
+      });
+    } else {
+      return refCollection.findOne(value).exec();
+    }
   },
 
   /**
    * get data by objectPath
-   * @param {string} objPath
-   * @return {object} valueObj
    */
   get: function get(objPath) {
     if (!this._data) return undefined;
@@ -194,7 +210,7 @@ export var basePrototype = {
     return valueObj;
   },
   toJSON: function toJSON() {
-    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var withRevAndAttachments = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     var data = clone(this._data);
 
     if (!withRevAndAttachments) {
@@ -208,8 +224,6 @@ export var basePrototype = {
   /**
    * set data by objectPath
    * This can only be called on temporary documents
-   * @param {string} objPath
-   * @param {object} value
    */
   set: function set(objPath, value) {
     // setters can only be used on temporary documents
@@ -248,9 +262,9 @@ export var basePrototype = {
   /**
    * updates document
    * @overwritten by plugin (optinal)
-   * @param  {object} updateObj mongodb-like syntax
+   * @param updateObj mongodb-like syntax
    */
-  update: function update() {
+  update: function update(_updateObj) {
     throw pluginMissing('update');
   },
   putAttachment: function putAttachment() {
@@ -269,24 +283,102 @@ export var basePrototype = {
 
   /**
    * runs an atomic update over the document
-   * @param  {function(any)} fun that takes the document-data and returns a new data-object
-   * @return {Promise<RxDocument>}
+   * @param function that takes the document-data and returns a new data-object
    */
-  atomicUpdate: function atomicUpdate(fun) {
+  atomicUpdate: function atomicUpdate(mutationFunction) {
     var _this2 = this;
 
-    this._atomicQueue = this._atomicQueue.then(function () {
-      var oldData = clone(_this2._dataSync$.getValue());
-      var ret = fun(clone(_this2._dataSync$.getValue()), _this2);
-      var retPromise = toPromise(ret);
-      return retPromise.then(function (newData) {
-        return _this2._saveData(newData, oldData);
-      });
-    });
-    return this._atomicQueue.then(function () {
-      return _this2;
+    return new Promise(function (res, rej) {
+      _this2._atomicQueue = _this2._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+        var done, oldData, newData;
+        return _regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                done = false; // we need a hacky while loop to stay incide the chain-link of _atomicQueue
+                // while still having the option to run a retry on conflicts
+
+              case 1:
+                if (done) {
+                  _context.next = 24;
+                  break;
+                }
+
+                oldData = _this2._dataSync$.getValue();
+                _context.prev = 3;
+                _context.next = 6;
+                return mutationFunction(clone(_this2._dataSync$.getValue()), _this2);
+
+              case 6:
+                newData = _context.sent;
+
+                if (_this2.collection) {
+                  newData = _this2.collection.schema.fillObjectWithDefaults(newData);
+                }
+
+                _context.next = 10;
+                return _this2._saveData(newData, oldData);
+
+              case 10:
+                done = true;
+                _context.next = 22;
+                break;
+
+              case 13:
+                _context.prev = 13;
+                _context.t0 = _context["catch"](3);
+
+                if (!isPouchdbConflictError(_context.t0)) {
+                  _context.next = 20;
+                  break;
+                }
+
+                _context.next = 18;
+                return nextTick();
+
+              case 18:
+                _context.next = 22;
+                break;
+
+              case 20:
+                rej(_context.t0);
+                return _context.abrupt("return");
+
+              case 22:
+                _context.next = 1;
+                break;
+
+              case 24:
+                res(_this2);
+
+              case 25:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee, null, [[3, 13]]);
+      })));
     });
   },
+
+  /**
+   * patches the given properties
+   */
+  atomicPatch: function atomicPatch(patch) {
+    return this.atomicUpdate(function (docData) {
+      Object.entries(patch).forEach(function (_ref2) {
+        var k = _ref2[0],
+            v = _ref2[1];
+        docData[k] = v;
+      });
+      return docData;
+    });
+  },
+
+  /**
+   * @deprecated use atomicPatch instead because it is better typed
+   * and does not allow any keys and values
+   */
   atomicSet: function atomicSet(key, value) {
     return this.atomicUpdate(function (docData) {
       objectPath.set(docData, key, value);
@@ -297,14 +389,11 @@ export var basePrototype = {
   /**
    * saves the new document-data
    * and handles the events
-   * @param {any} newData
-   * @param {any} oldData
-   * @return {Promise}
    */
   _saveData: function _saveData(newData, oldData) {
     var _this3 = this;
 
-    newData = clone(newData); // deleted documents cannot be changed
+    newData = newData; // deleted documents cannot be changed
 
     if (this._deleted$.getValue()) {
       throw newRxError('DOC11', {
@@ -314,12 +403,16 @@ export var basePrototype = {
     } // ensure modifications are ok
 
 
-    this.collection.schema.validateChange(newData, oldData);
+    this.collection.schema.validateChange(oldData, newData);
+    var startTime;
     return this.collection._runHooks('pre', 'save', newData, this).then(function () {
       _this3.collection.schema.validate(newData);
 
-      return _this3.collection._pouchPut(clone(newData));
+      startTime = now();
+      return _this3.collection._pouchPut(newData);
     }).then(function (ret) {
+      var endTime = now();
+
       if (!ret.ok) {
         throw newRxError('DOC12', {
           data: ret
@@ -328,7 +421,7 @@ export var basePrototype = {
 
       newData._rev = ret.rev; // emit event
 
-      var changeEvent = createChangeEvent('UPDATE', _this3.collection.database, _this3.collection, _this3, newData);
+      var changeEvent = createUpdateEvent(_this3.collection, newData, oldData, startTime, endTime, _this3);
 
       _this3.$emit(changeEvent);
 
@@ -339,7 +432,7 @@ export var basePrototype = {
   /**
    * saves the temporary document and makes a non-temporary out of it
    * Saving a temporary doc is basically the same as RxCollection.insert()
-   * @return {boolean} false if nothing to save
+   * @return false if nothing to save
    */
   save: function save() {
     var _this4 = this;
@@ -358,7 +451,7 @@ export var basePrototype = {
       _this4.collection._docCache.set(_this4.primary, _this4); // internal events
 
 
-      _this4._dataSync$.next(clone(_this4._data));
+      _this4._dataSync$.next(_this4._data);
 
       return true;
     });
@@ -368,7 +461,6 @@ export var basePrototype = {
    * remove the document,
    * this not not equal to a pouchdb.remove(),
    * instead we keep the values and only set _deleted: true
-   * @return {Promise<RxDocument>}
    */
   remove: function remove() {
     var _this5 = this;
@@ -381,8 +473,10 @@ export var basePrototype = {
     }
 
     var deletedData = clone(this._data);
+    var startTime;
     return this.collection._runHooks('pre', 'remove', deletedData, this).then(function () {
       deletedData._deleted = true;
+      startTime = now();
       /**
        * because pouch.remove will also empty the object,
        * we set _deleted: true and use pouch.put
@@ -390,7 +484,9 @@ export var basePrototype = {
 
       return _this5.collection._pouchPut(deletedData);
     }).then(function () {
-      _this5.$emit(createChangeEvent('REMOVE', _this5.collection.database, _this5.collection, _this5, _this5._data));
+      var endTime = now();
+
+      _this5.$emit(createDeleteEvent(_this5.collection, deletedData, _this5._data, startTime, endTime, _this5));
 
       return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
     }).then(function () {
@@ -401,8 +497,28 @@ export var basePrototype = {
     throw newRxError('DOC14');
   }
 };
-var pseudoConstructor = createRxDocumentConstructor(basePrototype);
-var pseudoRxDocument = new pseudoConstructor();
+export function createRxDocumentConstructor() {
+  var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
+
+  var constructor = function RxDocumentConstructor(collection, jsonData) {
+    this.collection = collection; // if true, this is a temporary document
+
+    this._isTemporary = false; // assume that this is always equal to the doc-data in the database
+
+    this._dataSync$ = new BehaviorSubject(jsonData);
+    this._deleted$ = new BehaviorSubject(false);
+    this._atomicQueue = Promise.resolve();
+    /**
+     * because of the prototype-merge,
+     * we can not use the native instanceof operator
+     */
+
+    this.isInstanceOfRxDocument = true;
+  };
+
+  constructor.prototype = proto;
+  return constructor;
+}
 export function defineGetterSetter(schema, valueObj) {
   var objPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
   var thisObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
@@ -464,31 +580,8 @@ export function createWithConstructor(constructor, collection, jsonData) {
   runPluginHooks('createRxDocument', doc);
   return doc;
 }
-/**
- * returns all possible properties of a RxDocument
- * @return {string[]} property-names
- */
-
-var _properties;
-
-export function properties() {
-  if (!_properties) {
-    var reserved = ['deleted', 'synced'];
-    var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
-    var prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-    _properties = [].concat(ownProperties, prototypeProperties, reserved);
-  }
-
-  return _properties;
-}
 export function isInstanceOf(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
 }
-export default {
-  createWithConstructor: createWithConstructor,
-  properties: properties,
-  createRxDocumentConstructor: createRxDocumentConstructor,
-  basePrototype: basePrototype,
-  isInstanceOf: isInstanceOf
-};
+//# sourceMappingURL=rx-document.js.map

@@ -6,6 +6,22 @@
  * hook-functions that can be extended by the plugin
  */
 export var HOOKS = {
+  /**
+   * Runs before a plugin is added.
+   * Use this to block the usage of non-compatible plugins.
+   */
+  preAddRxPlugin: [],
+
+  /**
+   * functions that run before the database is created
+   */
+  preCreateRxDatabase: [],
+
+  /**
+   * runs after the database is created and prepared
+   * but before the instance is returned to the user
+   * @async
+   */
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
@@ -21,13 +37,13 @@ export var HOOKS = {
    * gets RxSchema as attribute
    */
   createRxSchema: [],
+  preCreateRxQuery: [],
   createRxQuery: [],
   createRxDocument: [],
 
   /**
    * runs after a RxDocument is created,
    * cannot be async
-   * @type {Array}
    */
   postCreateRxDocument: [],
 
@@ -39,7 +55,6 @@ export var HOOKS = {
    *   adapter: any,
    *   settings: object
    * }
-   * @type {Array}
    */
   preCreatePouchDb: [],
 
@@ -49,19 +64,16 @@ export var HOOKS = {
    *   doc: Object, // originam doc-data
    *   migrated: // migrated doc-data after run throught migration-strategies
    * }
-   * @type {Array}
    */
   preMigrateDocument: [],
 
   /**
    * runs after the migration of a document has been done
-   * @type {Array}
    */
   postMigrateDocument: [],
 
   /**
    * runs at the beginning of the destroy-process of a database
-   * @type {Array}
    */
   preDestroyRxDatabase: []
 };
@@ -70,10 +82,6 @@ export function runPluginHooks(hookKey, obj) {
     return fun(obj);
   });
 }
-/**
- * @return {Promise}
- */
-
 export function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
     return fun(obj);
@@ -83,8 +91,9 @@ export function runAsyncPluginHooks(hookKey, obj) {
  * used in tests to remove hooks
  */
 
-export function clearHook(type, fun) {
+export function _clearHook(type, fun) {
   HOOKS[type] = HOOKS[type].filter(function (h) {
     return h !== fun;
   });
 }
+//# sourceMappingURL=hooks.js.map

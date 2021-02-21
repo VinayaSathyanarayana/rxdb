@@ -4,27 +4,23 @@
  */
 import PouchReplicationPlugin from 'pouchdb-replication';
 import { BehaviorSubject, Subject, fromEvent } from 'rxjs';
-import { skipUntil } from 'rxjs/operators';
-import { promiseWait, clone, pouchReplicationFunction } from '../util';
-import Core from '../core';
-import RxCollection from '../rx-collection';
+import { skipUntil, filter, first } from 'rxjs/operators';
+import { promiseWait, flatClone } from '../util';
+import { addRxPlugin } from '../core';
 import { newRxError } from '../rx-error';
-import PouchDB from '../pouch-db';
-import RxDBWatchForChangesPlugin from './watch-for-changes'; // add pouchdb-replication-plugin
+import { pouchReplicationFunction, isInstanceOf as isInstanceOfPouchDB } from '../pouch-db';
+import { isInstanceOf as isRxCollection } from '../rx-collection';
+import { RxDBWatchForChangesPlugin } from './watch-for-changes'; // add pouchdb-replication-plugin
 
-Core.plugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
+addRxPlugin(PouchReplicationPlugin); // add the watch-for-changes-plugin
 
-Core.plugin(RxDBWatchForChangesPlugin);
+addRxPlugin(RxDBWatchForChangesPlugin);
 var INTERNAL_POUCHDBS = new WeakSet();
-export var RxReplicationState =
-/*#__PURE__*/
-function () {
-  function RxReplicationState(collection) {
+export var RxReplicationStateBase = /*#__PURE__*/function () {
+  function RxReplicationStateBase(collection, syncOptions) {
     var _this = this;
 
     this._subs = [];
-    this.collection = collection;
-    this._pouchEventEmitterObject = null;
     this._subjects = {
       change: new Subject(),
       docs: new Subject(),
@@ -33,8 +29,10 @@ function () {
       complete: new BehaviorSubject(false),
       alive: new BehaviorSubject(false),
       error: new Subject()
-    }; // create getters
-
+    };
+    this.collection = collection;
+    this.syncOptions = syncOptions;
+    // create getters
     Object.keys(this._subjects).forEach(function (key) {
       Object.defineProperty(_this, key + '$', {
         get: function get() {
@@ -44,7 +42,28 @@ function () {
     });
   }
 
-  var _proto = RxReplicationState.prototype;
+  var _proto = RxReplicationStateBase.prototype;
+
+  _proto.awaitInitialReplication = function awaitInitialReplication() {
+    if (this.syncOptions.options && this.syncOptions.options.live) {
+      throw newRxError('RC4', {
+        database: this.collection.database.name,
+        collection: this.collection.name
+      });
+    }
+
+    if (this.collection.database.multiInstance && this.syncOptions.waitForLeadership) {
+      throw newRxError('RC5', {
+        database: this.collection.database.name,
+        collection: this.collection.name
+      });
+    }
+
+    var that = this;
+    return that.complete$.pipe(filter(function (x) {
+      return !!x;
+    }), first()).toPromise();
+  };
 
   _proto.cancel = function cancel() {
     if (this._pouchEventEmitterObject) this._pouchEventEmitterObject.cancel();
@@ -54,10 +73,9 @@ function () {
     });
   };
 
-  return RxReplicationState;
+  return RxReplicationStateBase;
 }();
-
-function setPouchEventEmitter(rxRepState, evEmitter) {
+export function setPouchEventEmitter(rxRepState, evEmitter) {
   if (rxRepState._pouchEventEmitterObject) throw newRxError('RC1');
   rxRepState._pouchEventEmitterObject = evEmitter; // change
 
@@ -110,10 +128,6 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
       return rxRepState._subjects.complete.next(info);
     });
   }));
-  /**
-   * @return {Promise}
-   */
-
 
   function getIsAlive(emitter) {
     // "state" will live in emitter.state if single direction replication
@@ -145,9 +159,8 @@ function setPouchEventEmitter(rxRepState, evEmitter) {
     });
   }));
 }
-
-export function createRxReplicationState(collection) {
-  return new RxReplicationState(collection);
+export function createRxReplicationState(collection, syncOptions) {
+  return new RxReplicationStateBase(collection, syncOptions);
 }
 export function sync(_ref) {
   var _this2 = this;
@@ -166,9 +179,9 @@ export function sync(_ref) {
     retry: true
   } : _ref$options,
       query = _ref.query;
-  options = clone(options); // prevent #641 by not allowing internal pouchdbs as remote
+  var useOptions = flatClone(options); // prevent #641 by not allowing internal pouchdbs as remote
 
-  if (PouchDB.isInstanceOf(remote) && INTERNAL_POUCHDBS.has(remote)) {
+  if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {
     throw newRxError('RC3', {
       database: this.database.name,
       collection: this.name
@@ -176,7 +189,7 @@ export function sync(_ref) {
   } // if remote is RxCollection, get internal pouchdb
 
 
-  if (RxCollection.isInstanceOf(remote)) {
+  if (isRxCollection(remote)) {
     remote.watchForChanges();
     remote = remote.pouch;
   }
@@ -188,12 +201,19 @@ export function sync(_ref) {
   }
 
   var syncFun = pouchReplicationFunction(this.pouch, direction);
-  if (query) options.selector = query.keyCompress().selector;
-  var repState = createRxReplicationState(this); // run internal so .sync() does not have to be async
+  if (query) useOptions.selector = query.keyCompress().selector;
+  var repState = createRxReplicationState(this, {
+    remote: remote,
+    waitForLeadership: waitForLeadership,
+    direction: direction,
+    options: options,
+    query: query
+  }); // run internal so .sync() does not have to be async
 
-  var waitTillRun = waitForLeadership ? this.database.waitForLeadership() : promiseWait(0);
+  var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
+  ? this.database.waitForLeadership() : promiseWait(0);
   waitTillRun.then(function () {
-    var pouchSync = syncFun(remote, options);
+    var pouchSync = syncFun(remote, useOptions);
 
     _this2.watchForChanges();
 
@@ -209,16 +229,15 @@ export var prototypes = {
     proto.sync = sync;
   }
 };
-export var overwritable = {};
 export var hooks = {
   createRxCollection: function createRxCollection(collection) {
     INTERNAL_POUCHDBS.add(collection.pouch);
   }
 };
-export default {
+export var RxDBReplicationPlugin = {
+  name: 'replication',
   rxdb: rxdb,
   prototypes: prototypes,
-  overwritable: overwritable,
-  hooks: hooks,
-  sync: sync
+  hooks: hooks
 };
+//# sourceMappingURL=replication.js.map

@@ -1,65 +1,276 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.isRxSchema = exports.isRxQuery = exports.isRxDocument = exports.isRxCollection = exports.dbCount = exports.isRxDatabase = exports.plugin = exports.checkAdapter = exports.removeDatabase = exports.create = void 0;
+var _exportNames = {
+  addRxPlugin: true,
+  PouchDB: true,
+  validateCouchDBString: true,
+  getBatch: true,
+  countAllUndeleted: true,
+  createRxDatabase: true,
+  removeRxDatabase: true,
+  checkAdapter: true,
+  isRxDatabase: true,
+  dbCount: true,
+  _collectionNamePrimary: true,
+  isRxCollection: true,
+  _createRxCollection: true,
+  isRxDocument: true,
+  getDocumentOrmPrototype: true,
+  getDocumentPrototype: true,
+  isRxQuery: true,
+  isRxSchema: true,
+  createRxSchema: true,
+  RxSchema: true,
+  getIndexes: true,
+  normalize: true,
+  getFinalFields: true,
+  getPreviousVersions: true,
+  RxChangeEvent: true,
+  getRxStoragePouchDb: true,
+  getPouchLocation: true,
+  _clearHook: true,
+  createCrypter: true
+};
+Object.defineProperty(exports, "addRxPlugin", {
+  enumerable: true,
+  get: function get() {
+    return _plugin.addRxPlugin;
+  }
+});
+Object.defineProperty(exports, "PouchDB", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.PouchDB;
+  }
+});
+Object.defineProperty(exports, "validateCouchDBString", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.validateCouchDBString;
+  }
+});
+Object.defineProperty(exports, "getBatch", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.getBatch;
+  }
+});
+Object.defineProperty(exports, "countAllUndeleted", {
+  enumerable: true,
+  get: function get() {
+    return _pouchDb.countAllUndeleted;
+  }
+});
+Object.defineProperty(exports, "createRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.createRxDatabase;
+  }
+});
+Object.defineProperty(exports, "removeRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.removeRxDatabase;
+  }
+});
+Object.defineProperty(exports, "checkAdapter", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.checkAdapter;
+  }
+});
+Object.defineProperty(exports, "isRxDatabase", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "dbCount", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase.dbCount;
+  }
+});
+Object.defineProperty(exports, "_collectionNamePrimary", {
+  enumerable: true,
+  get: function get() {
+    return _rxDatabase._collectionNamePrimary;
+  }
+});
+Object.defineProperty(exports, "isRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "_createRxCollection", {
+  enumerable: true,
+  get: function get() {
+    return _rxCollection.create;
+  }
+});
+Object.defineProperty(exports, "isRxDocument", {
+  enumerable: true,
+  get: function get() {
+    return _rxDocument.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "getDocumentOrmPrototype", {
+  enumerable: true,
+  get: function get() {
+    return _rxDocumentPrototypeMerge.getDocumentOrmPrototype;
+  }
+});
+Object.defineProperty(exports, "getDocumentPrototype", {
+  enumerable: true,
+  get: function get() {
+    return _rxDocumentPrototypeMerge.getDocumentPrototype;
+  }
+});
+Object.defineProperty(exports, "isRxQuery", {
+  enumerable: true,
+  get: function get() {
+    return _rxQuery.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "isRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.isInstanceOf;
+  }
+});
+Object.defineProperty(exports, "createRxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.createRxSchema;
+  }
+});
+Object.defineProperty(exports, "RxSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.RxSchema;
+  }
+});
+Object.defineProperty(exports, "getIndexes", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.getIndexes;
+  }
+});
+Object.defineProperty(exports, "normalize", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.normalize;
+  }
+});
+Object.defineProperty(exports, "getFinalFields", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.getFinalFields;
+  }
+});
+Object.defineProperty(exports, "getPreviousVersions", {
+  enumerable: true,
+  get: function get() {
+    return _rxSchema.getPreviousVersions;
+  }
+});
+Object.defineProperty(exports, "RxChangeEvent", {
+  enumerable: true,
+  get: function get() {
+    return _rxChangeEvent.RxChangeEvent;
+  }
+});
+Object.defineProperty(exports, "getRxStoragePouchDb", {
+  enumerable: true,
+  get: function get() {
+    return _rxStoragePouchdb.getRxStoragePouchDb;
+  }
+});
+Object.defineProperty(exports, "getPouchLocation", {
+  enumerable: true,
+  get: function get() {
+    return _rxStoragePouchdb.getPouchLocation;
+  }
+});
+Object.defineProperty(exports, "_clearHook", {
+  enumerable: true,
+  get: function get() {
+    return _hooks._clearHook;
+  }
+});
+Object.defineProperty(exports, "createCrypter", {
+  enumerable: true,
+  get: function get() {
+    return _crypter.createCrypter;
+  }
+});
 
-var _rxDatabase = _interopRequireDefault(require("./rx-database"));
+require("./types/modules/crypto-js.d");
 
-var _rxSchema = require("./rx-schema");
+require("./types/modules/graphql-client.d");
 
-var _rxDocument = _interopRequireDefault(require("./rx-document"));
+require("./types/modules/mocha.parallel.d");
+
+require("./types/modules/modifiyjs.d");
+
+require("./types/modules/pouchdb-selector-core.d");
+
+require("./types/modules/random-token.d");
+
+var _plugin = require("./plugin");
+
+var _pouchDb = require("./pouch-db");
+
+var _rxDatabase = require("./rx-database");
+
+var _rxCollection = require("./rx-collection");
+
+var _rxDocument = require("./rx-document");
+
+var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
 
 var _rxQuery = require("./rx-query");
 
-var _rxCollection = _interopRequireDefault(require("./rx-collection"));
+var _rxSchema = require("./rx-schema");
 
-var _queryChangeDetector = _interopRequireDefault(require("./query-change-detector"));
+var _rxChangeEvent = require("./rx-change-event");
 
-var _plugin = _interopRequireDefault(require("./plugin"));
+var _rxStoragePouchdb = require("./rx-storage-pouchdb");
 
-var _pouchDb = _interopRequireDefault(require("./pouch-db"));
+var _hooks = require("./hooks");
 
-/**
- * this is the main entry-point for custom builds
- * it can be used as standalone but is also used in the batteries-included main-export
- */
-var create = _rxDatabase["default"].create;
-exports.create = create;
-var removeDatabase = _rxDatabase["default"].removeDatabase;
-exports.removeDatabase = removeDatabase;
-var checkAdapter = _rxDatabase["default"].checkAdapter;
-exports.checkAdapter = checkAdapter;
-var plugin = _plugin["default"];
-exports.plugin = plugin;
-var isRxDatabase = _rxDatabase["default"].isInstanceOf;
-exports.isRxDatabase = isRxDatabase;
-var dbCount = _rxDatabase["default"].dbCount;
-exports.dbCount = dbCount;
-var isRxCollection = _rxCollection["default"].isInstanceOf;
-exports.isRxCollection = isRxCollection;
-var isRxDocument = _rxDocument["default"].isInstanceOf;
-exports.isRxDocument = isRxDocument;
-var isRxQuery = _rxQuery.isInstanceOf;
-exports.isRxQuery = isRxQuery;
-var isRxSchema = _rxSchema.isInstanceOf;
-exports.isRxSchema = isRxSchema;
-var _default = {
-  create: create,
-  removeDatabase: removeDatabase,
-  checkAdapter: checkAdapter,
-  plugin: plugin,
-  dbCount: dbCount,
-  isRxDatabase: isRxDatabase,
-  isRxCollection: isRxCollection,
-  isRxDocument: isRxDocument,
-  isRxQuery: isRxQuery,
-  isRxSchema: isRxSchema,
-  PouchDB: _pouchDb["default"],
-  QueryChangeDetector: _queryChangeDetector["default"],
-  RxDatabase: _rxDatabase["default"]
-};
-exports["default"] = _default;
+var _crypter = require("./crypter");
+
+var _queryCache = require("./query-cache");
+
+Object.keys(_queryCache).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _queryCache[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _queryCache[key];
+    }
+  });
+});
+
+var _util = require("./util");
+
+Object.keys(_util).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _util[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _util[key];
+    }
+  });
+});
+
+//# sourceMappingURL=core.js.map

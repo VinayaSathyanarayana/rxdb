@@ -308,3 +308,346 @@ AFTER:
 101382
 101347
 98576
+
+
+
+## 8 November 2019
+
+BEFORE:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10066.766161,
+    "perInstance": 10.066766161
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5963.456396,
+    "perBlock": 2.981728198
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1808.460181,
+    "perDocument": 0.1808460181
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4475.968576
+  }
+}
+
+AFTER CUSTOM BUILD:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9502.918219,
+    "perInstance": 9.502918219
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5624.821419,
+    "perBlock": 2.8124107095
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1742.657245,
+    "perDocument": 0.1742657245
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4957.095949
+  }
+}
+
+## Add while subscribe test
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10052.490876,
+    "perInstance": 10.052490876
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5526.700043,
+    "perBlock": 2.7633500215
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1794.911805,
+    "perDocument": 0.17949118049999999
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 5134.875101
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 12426.62809
+  }
+}
+
+## use: array-push-at-sort-position
+
+Combined best of many runs
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9604.652948,
+    "perInstance": 9.604652948
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5836.421114,
+    "perBlock": 2.918210557
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1432.457661,
+    "perDocument": 0.1432457661
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4115.045391
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 9996.26826
+  }
+}
+
+## using less deep-clones
+
+Combined best of many runs
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9600.227252,
+    "perInstance": 9.600227252
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5319.980171,
+    "perBlock": 2.6599900855
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1224.783592,
+    "perDocument": 0.1224783592
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4652.264144
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10082.873372
+  }
+}
+
+## better method to remove doc from array
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 9483.45607,
+    "perInstance": 9.48345607
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 5400.620172,
+    "perBlock": 2.700310086
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1386.384774,
+    "perDocument": 0.13863847740000002
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3769.25471
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 12508.054624
+  }
+}
+
+
+
+## Before event-reduce-js
+
+BEFORE:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10472.781867,
+    "perInstance": 10.472781867
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7473.578767,
+    "perBlock": 3.7367893835
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1501.103103,
+    "perDocument": 0.1501103103
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3294.598218
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10447.864809
+  }
+}
+
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 10913.7235,
+    "perInstance": 10.9137235
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 7503.363727,
+    "perBlock": 3.7516818635
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1999.911211,
+    "perDocument": 0.1999911211
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 3329.153105
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 10567.352254
+  }
+}
+
+AFTER:
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 13084.705562,
+    "perInstance": 13.084705562
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 8999.905236,
+    "perBlock": 4.499952618
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1645.998414,
+    "perDocument": 0.1645998414
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4212.80011
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 9041.238585
+  }
+}
+
+{
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 12290.284759,
+    "perInstance": 12.290284759
+  },
+  "insertDocuments": {
+    "blocks": 2000,
+    "blockSize": 5,
+    "total": 10075.885535,
+    "perBlock": 5.0379427675
+  },
+  "findDocuments": {
+    "amount": 10000,
+    "total": 1613.295623,
+    "perDocument": 0.1613295623
+  },
+  "migrateDocuments": {
+    "amount": 1000,
+    "total": 4003.478441
+  },
+  "writeWhileSubscribe": {
+    "amount": 1000,
+    "total": 8911.231049
+  }
+}
+
+
+
+## optimize event-reduce for performance
+
+(measure writeWhileSubscribe)
+
+BEFORE:
+5862
+5672
+5702
+5601
+5586
+avg = 5684.6
+
+AFTER:
+5405
+5455
+5500
+5480
+5451
+avg = 5458.2
+
+
+
+## use addCollections
+
+BEFORE:
+
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 17758.374207,
+    "perInstance": 17.758374207
+  }
+  "spawnDatabases": {
+    "amount": 1000,
+    "collections": 5,
+    "total": 17622.248933,
+    "perInstance": 17.622248932999998
+  },
+

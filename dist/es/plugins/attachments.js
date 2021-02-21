@@ -1,10 +1,13 @@
+import _regeneratorRuntime from "@babel/runtime/regenerator";
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import { map } from 'rxjs/operators';
-import { createChangeEvent } from './../rx-change-event';
-import { nextTick, isElectronRenderer } from './../util';
+import { createUpdateEvent } from './../rx-change-event';
+import { nextTick, isElectronRenderer, now } from './../util';
 import { newRxError } from '../rx-error';
+import { pouchAttachmentBinaryHash } from '../pouch-db';
 
 function ensureSchemaSupportsAttachments(doc) {
-  var schemaJson = doc.collection.schema.jsonID;
+  var schemaJson = doc.collection.schema.jsonSchema;
 
   if (!schemaJson.attachments) {
     throw newRxError('AT1', {
@@ -14,10 +17,12 @@ function ensureSchemaSupportsAttachments(doc) {
 }
 
 function resyncRxDocument(doc) {
-  return doc.collection.pouch.get(doc.primary).then(function (docData) {
-    var data = doc.collection._handleFromPouch(docData);
+  var startTime = now();
+  return doc.collection.pouch.get(doc.primary).then(function (docDataFromPouch) {
+    var data = doc.collection._handleFromPouch(docDataFromPouch);
 
-    var changeEvent = createChangeEvent('UPDATE', doc.collection.database, doc.collection, doc, data);
+    var endTime = now();
+    var changeEvent = createUpdateEvent(doc.collection, data, null, startTime, endTime, doc);
     doc.$emit(changeEvent);
   });
 }
@@ -26,9 +31,6 @@ export var blobBufferUtil = {
   /**
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
-   * @param  {string} data
-   * @param  {string} type
-   * @return {Blob|Buffer}
    */
   createBlobBuffer: function createBlobBuffer(data, type) {
     var blobBuffer;
@@ -69,17 +71,30 @@ export var blobBufferUtil = {
         var text = e.target.result;
         res(text);
       });
+      var blobBufferType = Object.prototype.toString.call(blobBuffer);
+      /**
+       * in the electron-renderer we have a typed array insteaf of a blob
+       * so we have to transform it.
+       * @link https://github.com/pubkey/rxdb/issues/1371
+       */
+
+      if (blobBufferType === '[object Uint8Array]') {
+        blobBuffer = new Blob([blobBuffer]);
+      }
+
       reader.readAsText(blobBuffer);
     });
   }
 };
 
 var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment) {
-  Object.entries(attachment.doc.collection._attachments).forEach(function (_ref) {
+  Object.entries(attachment.doc.collection.attachments).forEach(function (_ref) {
     var funName = _ref[0],
         fun = _ref[1];
-    return attachment.__defineGetter__(funName, function () {
-      return fun.bind(attachment);
+    Object.defineProperty(attachment, funName, {
+      get: function get() {
+        return fun.bind(attachment);
+      }
     });
   });
 };
@@ -89,9 +104,7 @@ var _assignMethodsToAttachment = function _assignMethodsToAttachment(attachment)
  */
 
 
-export var RxAttachment =
-/*#__PURE__*/
-function () {
+export var RxAttachment = /*#__PURE__*/function () {
   function RxAttachment(_ref2) {
     var doc = _ref2.doc,
         id = _ref2.id,
@@ -108,10 +121,6 @@ function () {
 
     _assignMethodsToAttachment(this);
   }
-  /**
-   * @return {Promise}
-   */
-
 
   var _proto = RxAttachment.prototype;
 
@@ -124,7 +133,6 @@ function () {
   }
   /**
    * returns the data for the attachment
-   * @return {Promise<Buffer|Blob>}
    */
   ;
 
@@ -160,43 +168,97 @@ export function fromPouchDocument(id, pouchDocAttachment, rxDocument) {
 }
 
 function shouldEncrypt(doc) {
-  return !!doc.collection.schema.jsonID.attachments.encrypted;
+  return !!doc.collection.schema.jsonSchema.attachments.encrypted;
 }
-/**
- * @return {Promise}
- */
 
-
-export function putAttachment(_ref3) {
-  var _this3 = this;
-
-  var id = _ref3.id,
-      data = _ref3.data,
-      _ref3$type = _ref3.type,
-      type = _ref3$type === void 0 ? 'text/plain' : _ref3$type;
-  ensureSchemaSupportsAttachments(this);
-  if (shouldEncrypt(this)) data = this.collection._crypter._encryptValue(data);
-  var blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
-  this._atomicQueue = this._atomicQueue.then(function () {
-    return _this3.collection.pouch.putAttachment(_this3.primary, id, _this3._data._rev, blobBuffer, type);
-  }).then(function () {
-    return _this3.collection.pouch.get(_this3.primary);
-  }).then(function (docData) {
-    var attachmentData = docData._attachments[id];
-    var attachment = fromPouchDocument(id, attachmentData, _this3);
-    _this3._data._rev = docData._rev;
-    _this3._data._attachments = docData._attachments;
-    return resyncRxDocument(_this3).then(function () {
-      return attachment;
-    });
-  });
-  return this._atomicQueue;
+export function putAttachment(_x) {
+  return _putAttachment.apply(this, arguments);
 }
 /**
  * get an attachment of the document by its id
- * @param  {string} id
- * @return {RxAttachment}
  */
+
+function _putAttachment() {
+  _putAttachment = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(_ref3) {
+    var _this5 = this;
+
+    var id,
+        data,
+        _ref3$type,
+        type,
+        skipIfSame,
+        blobBuffer,
+        _args2 = arguments;
+
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            id = _ref3.id, data = _ref3.data, _ref3$type = _ref3.type, type = _ref3$type === void 0 ? 'text/plain' : _ref3$type;
+            skipIfSame = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : false;
+            ensureSchemaSupportsAttachments(this);
+
+            if (shouldEncrypt(this)) {
+              data = this.collection._crypter._encryptValue(data);
+            }
+
+            blobBuffer = blobBufferUtil.createBlobBuffer(data, type);
+            this._atomicQueue = this._atomicQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+              var currentMeta, newHash;
+              return _regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                  switch (_context.prev = _context.next) {
+                    case 0:
+                      if (!(skipIfSame && _this5._data._attachments && _this5._data._attachments[id])) {
+                        _context.next = 7;
+                        break;
+                      }
+
+                      currentMeta = _this5._data._attachments[id];
+                      _context.next = 4;
+                      return pouchAttachmentBinaryHash(data);
+
+                    case 4:
+                      newHash = _context.sent;
+
+                      if (!(currentMeta.content_type === type && currentMeta.digest === newHash)) {
+                        _context.next = 7;
+                        break;
+                      }
+
+                      return _context.abrupt("return", _this5.getAttachment(id));
+
+                    case 7:
+                      return _context.abrupt("return", _this5.collection.pouch.putAttachment(_this5.primary, id, _this5._data._rev, blobBuffer, type).then(function () {
+                        return _this5.collection.pouch.get(_this5.primary);
+                      }).then(function (docData) {
+                        var attachmentData = docData._attachments[id];
+                        var attachment = fromPouchDocument(id, attachmentData, _this5);
+                        _this5._data._rev = docData._rev;
+                        _this5._data._attachments = docData._attachments;
+                        return resyncRxDocument(_this5).then(function () {
+                          return attachment;
+                        });
+                      }));
+
+                    case 8:
+                    case "end":
+                      return _context.stop();
+                  }
+                }
+              }, _callee);
+            })));
+            return _context2.abrupt("return", this._atomicQueue);
+
+          case 7:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, this);
+  }));
+  return _putAttachment.apply(this, arguments);
+}
 
 export function getAttachment(id) {
   ensureSchemaSupportsAttachments(this);
@@ -210,11 +272,10 @@ export function getAttachment(id) {
 }
 /**
  * returns all attachments of the document
- * @return {RxAttachment[]}
  */
 
 export function allAttachments() {
-  var _this4 = this;
+  var _this3 = this;
 
   ensureSchemaSupportsAttachments(this);
 
@@ -223,24 +284,19 @@ export function allAttachments() {
 
   if (!docData._attachments) return [];
   return Object.keys(docData._attachments).map(function (id) {
-    return fromPouchDocument(id, docData._attachments[id], _this4);
+    return fromPouchDocument(id, docData._attachments[id], _this3);
   });
 }
 export function preMigrateDocument(action) {
   delete action.migrated._attachments;
   return action;
 }
-/**
- * @return {Promise}
- */
-
 export function postMigrateDocument(action) {
   var primaryPath = action.oldCollection.schema.primaryPath;
   var attachments = action.doc._attachments;
   if (!attachments) return Promise.resolve(action);
   var currentPromise = Promise.resolve();
-
-  var _loop = function _loop(id) {
+  Object.keys(attachments).forEach(function (id) {
     var stubData = attachments[id];
     var primary = action.doc[primaryPath];
     currentPromise = currentPromise.then(function () {
@@ -252,12 +308,7 @@ export function postMigrateDocument(action) {
     }).then(function (res) {
       return action.res = res;
     });
-  };
-
-  for (var id in attachments) {
-    _loop(id);
-  }
-
+  });
   return currentPromise;
 }
 export var rxdb = true;
@@ -268,18 +319,18 @@ export var prototypes = {
     proto.allAttachments = allAttachments;
     Object.defineProperty(proto, 'allAttachments$', {
       get: function allAttachments$() {
-        var _this5 = this;
+        var _this4 = this;
 
         return this._dataSync$.pipe(map(function (data) {
-          if (!data._attachments) return {};
-          return data._attachments;
+          if (!data['_attachments']) return {};
+          return data['_attachments'];
         }), map(function (attachmentsData) {
           return Object.entries(attachmentsData);
         }), map(function (entries) {
           return entries.map(function (_ref4) {
             var id = _ref4[0],
                 attachmentData = _ref4[1];
-            return fromPouchDocument(id, attachmentData, _this5);
+            return fromPouchDocument(id, attachmentData, _this4);
           });
         }));
       }
@@ -291,10 +342,11 @@ export var hooks = {
   preMigrateDocument: preMigrateDocument,
   postMigrateDocument: postMigrateDocument
 };
-export default {
+export var RxDBAttachmentsPlugin = {
+  name: 'attachments',
   rxdb: rxdb,
   prototypes: prototypes,
   overwritable: overwritable,
-  hooks: hooks,
-  blobBufferUtil: blobBufferUtil
+  hooks: hooks
 };
+//# sourceMappingURL=attachments.js.map

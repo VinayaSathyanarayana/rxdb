@@ -4,18 +4,11 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
-import { clone } from '../util.js';
 export function update(updateObj) {
-  var oldDocData = clone(this._data);
+  var oldDocData = this._data;
   var newDocData = modifyjs(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
-/**
- * 
- * @param {*} updateObj 
- * @return {Promise}
- */
-
 export function RxQueryUpdate(updateObj) {
   return this.exec().then(function (docs) {
     if (!docs) return null;
@@ -43,7 +36,9 @@ export var prototypes = {
     proto.update = RxQueryUpdate;
   }
 };
-export default {
+export var RxDBUpdatePlugin = {
+  name: 'update',
   rxdb: rxdb,
   prototypes: prototypes
 };
+//# sourceMappingURL=update.js.map

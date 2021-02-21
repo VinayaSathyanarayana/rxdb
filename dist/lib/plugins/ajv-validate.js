@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports._getValidator = _getValidator;
-exports["default"] = exports.hooks = exports.prototypes = exports.rxdb = void 0;
+exports.RxDBAjvValidatePlugin = exports.hooks = exports.prototypes = exports.rxdb = void 0;
 
 var _ajv = _interopRequireDefault(require("ajv"));
 
@@ -23,58 +23,37 @@ var _util = require("../util");
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
- * @type {Object<string, any>}
  */
-var validatorsCache = {};
+var VALIDATOR_CACHE = new Map();
+var ajv = new _ajv["default"]();
 /**
  * returns the parsed validator from ajv
- * @param {string} [schemaPath=''] if given, the schema for the sub-path is used
- * @
  */
 
 function _getValidator(rxSchema) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var hash = rxSchema.hash;
-  if (!validatorsCache[hash]) validatorsCache[hash] = {};
-  var validatorsOfHash = validatorsCache[hash];
 
-  if (!validatorsOfHash[schemaPath]) {
-    var schemaPart = schemaPath === '' ? rxSchema.jsonID : rxSchema.getSchemaByObjectPath(schemaPath);
-
-    if (!schemaPart) {
-      throw (0, _rxError.newRxError)('VD1', {
-        schemaPath: schemaPath
-      });
-    } // const ajv = new Ajv({errorDataPath: 'property'});
-
-
-    var ajv = new _ajv["default"]();
-    validatorsOfHash[schemaPath] = ajv.compile(schemaPart);
+  if (!VALIDATOR_CACHE.has(hash)) {
+    var validator = ajv.compile(rxSchema.jsonSchema);
+    VALIDATOR_CACHE.set(hash, validator);
   }
 
-  return validatorsOfHash[schemaPath];
+  return VALIDATOR_CACHE.get(hash);
 }
 /**
  * validates the given object against the schema
- * @param  {any} obj
- * @param  {String} [schemaPath=''] if given, the sub-schema will be validated
- * @throws {RxError} if not valid
- * @return {any} obj if validation successful
  */
 
 
 function validate(obj) {
-  var schemaPath = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-  var useValidator = _getValidator(this, schemaPath);
+  var useValidator = _getValidator(this);
 
   var isValid = useValidator(obj);
   if (isValid) return obj;else {
     throw (0, _rxError.newRxError)('VD2', {
       errors: useValidator.errors,
-      schemaPath: schemaPath,
       obj: obj,
-      schema: this.jsonID
+      schema: this.jsonSchema
     });
   }
 }
@@ -91,7 +70,6 @@ exports.rxdb = rxdb;
 var prototypes = {
   /**
    * set validate-function for the RxSchema.prototype
-   * @param {[type]} prototype of RxSchema
    */
   RxSchema: function RxSchema(proto) {
     proto.validate = validate;
@@ -102,9 +80,12 @@ var hooks = {
   createRxSchema: runAfterSchemaCreated
 };
 exports.hooks = hooks;
-var _default = {
+var RxDBAjvValidatePlugin = {
+  name: 'ajv-validate',
   rxdb: rxdb,
   prototypes: prototypes,
   hooks: hooks
 };
-exports["default"] = _default;
+exports.RxDBAjvValidatePlugin = RxDBAjvValidatePlugin;
+
+//# sourceMappingURL=ajv-validate.js.map

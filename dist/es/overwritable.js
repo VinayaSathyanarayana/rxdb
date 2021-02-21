@@ -1,53 +1,45 @@
 /**
  * functions that can or should be overwritten by plugins
  */
-import { pluginMissing } from './rx-error';
-var funs = {
+import { pluginMissing } from './util';
+export var overwritable = {
+  /**
+   * if this method is overwritte with one
+   * that returns true, we do additional checks
+   * which help the developer but have bad performance
+   */
+  isDevMode: function isDevMode() {
+    return false;
+  },
+
   /**
    * validates if a password can be used
    * @overwritten by plugin (optional)
-   * @param  {any} password
    * @throws if password not valid
-   * @return {void}
    */
-  validatePassword: function validatePassword() {
+  validatePassword: function validatePassword(_password) {
     throw pluginMissing('encryption');
   },
 
   /**
    * creates a key-compressor for the given schema
-   * @param  {RxSchema} schema
-   * @return {KeyCompressor}
    */
-  createKeyCompressor: function createKeyCompressor() {
+  createKeyCompressor: function createKeyCompressor(_rxSchema) {
     throw pluginMissing('key-compression');
   },
 
   /**
-   * creates a leader-elector for the given database
-   * @param  {RxDatabase} database
-   * @return {LeaderElector}
-   */
-  createLeaderElector: function createLeaderElector() {
-    throw pluginMissing('leaderelection');
-  },
-
-  /**
    * checks if the given adapter can be used
-   * @return {any} adapter
    */
-  checkAdapter: function checkAdapter() {
+  checkAdapter: function checkAdapter(_adapter) {
     throw pluginMissing('adapter-check');
   },
 
   /**
    * overwritte to map error-codes to text-messages
-   * @param  {string} message
-   * @return {string}
    */
   tunnelErrorMessage: function tunnelErrorMessage(message) {
-    // TODO better text with link
-    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the error-messages-plugin https://pubkey.github.io/rxdb/custom-build.html#error-messages\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
+    return "RxDB Error-Code " + message + ".\n        - To find out what this means, use the dev-mode-plugin https://pubkey.github.io/rxdb/custom-build.html#dev-mode\n        - Or search for this code https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
-export default funs;
+//# sourceMappingURL=overwritable.js.map

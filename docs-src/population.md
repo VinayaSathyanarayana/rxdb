@@ -7,7 +7,7 @@ This works exactly like population with [mongoose](http://mongoosejs.com/docs/po
 
 ## Schema with ref
 
-The `ref`-keyword describes to which collection the field-value belongs to.
+The `ref`-keyword in properties describes to which collection the field-value belongs to (has a relationship). 
 
 ```javascript
 export const refHuman = {
@@ -20,9 +20,31 @@ export const refHuman = {
         },
         bestFriend: {
             ref: 'human',     // refers to collection human
-            type: 'string'    // ref-values must always be string (primary of foreign RxDocument)
+            type: 'string'    // ref-values must always be string or ['string','null'] (primary of foreign RxDocument) 
         }
     }
+};
+```
+
+You can also have a one-to-many reference by using a string-array.
+
+```js
+export const schemaWithOneToManyReference = {
+  version: 0,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'string',
+      primary: true
+    },
+    friends: {
+      type: 'array',
+      ref: 'human',
+      items: {
+        type: 'string'
+      }
+    }
+  }
 };
 ```
 
@@ -67,21 +89,22 @@ console.dir(bestFriend); //> RxDocument[Alice]
 ## Example with nested reference
 
 ```javascript
-const myCollection = await myDatabase.collection({
-  name: 'human',
-  schema: {
-    version: 0,
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string'
-      },
-      family: {
-        type: 'object',
-        properties: {
-          mother: {
-            type: 'string',
-            ref: 'human'
+const myCollection = await myDatabase.addCollections({
+  human: {
+    schema: {
+      version: 0,
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        },
+        family: {
+          type: 'object',
+          properties: {
+            mother: {
+              type: 'string',
+              ref: 'human'
+            }
           }
         }
       }
@@ -96,24 +119,25 @@ console.dir(mother); //> RxDocument
 ## Example with array
 
 ```javascript
-const myCollection = await myDatabase.collection({
-  name: 'human',
-  schema: {
-    version: 0,
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string'
-      },
-      friends: {
-        type: 'array',
-        ref: 'human',
-        items: {
-            type: 'string'
+const myCollection = await myDatabase.addCollections({
+  human: {
+    schema: {
+      version: 0,
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        },
+        friends: {
+          type: 'array',
+          ref: 'human',
+          items: {
+              type: 'string'
+          }
         }
       }
     }
-  }
+  } 
 });
 
 //[insert other humans here]

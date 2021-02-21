@@ -1,12 +1,12 @@
 import { fromEvent } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { promiseWait, nextTick } from '../util';
+import { promiseWait, nextTick, now } from '../util';
 import { changeEventfromPouchChange } from '../rx-change-event';
+
 /**
  * listens to changes of the internal pouchdb
  * and ensures they are emitted to the internal RxChangeEvent-Stream
  */
-
 export function watchForChanges() {
   var _this = this;
 
@@ -42,14 +42,13 @@ export function watchForChanges() {
 /**
  * handles a single change-event
  * and ensures that it is not already handled
- * @param {RxCollection} collection
- * @param {*} change
- * @return {Promise<boolean>}
  */
 
 function _handleSingleChange(collection, change) {
   if (change.id.charAt(0) === '_') return Promise.resolve(false); // do not handle changes of internal docs
-  // wait 2 ticks and 20 ms to give the internal event-handling time to run
+
+  var startTime = now();
+  var endTime = now(); // wait 2 ticks and 20 ms to give the internal event-handling time to run
 
   return promiseWait(20).then(function () {
     return nextTick();
@@ -58,8 +57,11 @@ function _handleSingleChange(collection, change) {
   }).then(function () {
     var docData = change.doc; // already handled by internal event-stream
 
-    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) return Promise.resolve(false);
-    var cE = changeEventfromPouchChange(docData, collection);
+    if (collection._changeEventBuffer.hasChangeWithRevision(docData._rev)) {
+      return false;
+    }
+
+    var cE = changeEventfromPouchChange(docData, collection, startTime, endTime);
     collection.$emit(cE);
     return true;
   });
@@ -71,7 +73,9 @@ export var prototypes = {
     proto.watchForChanges = watchForChanges;
   }
 };
-export default {
+export var RxDBWatchForChangesPlugin = {
+  name: 'watch-for-changes',
   rxdb: rxdb,
   prototypes: prototypes
 };
+//# sourceMappingURL=watch-for-changes.js.map

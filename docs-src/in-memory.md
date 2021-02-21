@@ -30,7 +30,7 @@ Returns a promise that resolves with another `RxCollection` that is the in-memor
 // IMPORTANT: You have to add the memory-adapter before you can use inMemory-Collections
 // RUN 'npm install pouchdb-adapter-memory --save'
 import PouchAdapterMemory from 'pouchdb-adapter-memory';
-RxDB.plugin(PouchAdapterMemory);
+addRxPlugin(PouchAdapterMemory);
 
 const memCol = await myCollection.inMemory();
 
@@ -54,4 +54,4 @@ await memCol.awaitPersistence(); // after this you can be sure that everything i
 
 --------------------------------------------------------------------------------
 
-If you are new to RxDB, you should continue [here](./rx-local-document.md)
+If you are new to RxDB, you should continue [here](./query-cache.md)

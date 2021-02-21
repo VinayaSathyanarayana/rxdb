@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.runPluginHooks = runPluginHooks;
 exports.runAsyncPluginHooks = runAsyncPluginHooks;
-exports.clearHook = clearHook;
+exports._clearHook = _clearHook;
 exports.HOOKS = void 0;
 
 /**
@@ -16,6 +16,22 @@ exports.HOOKS = void 0;
  * hook-functions that can be extended by the plugin
  */
 var HOOKS = {
+  /**
+   * Runs before a plugin is added.
+   * Use this to block the usage of non-compatible plugins.
+   */
+  preAddRxPlugin: [],
+
+  /**
+   * functions that run before the database is created
+   */
+  preCreateRxDatabase: [],
+
+  /**
+   * runs after the database is created and prepared
+   * but before the instance is returned to the user
+   * @async
+   */
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
@@ -31,13 +47,13 @@ var HOOKS = {
    * gets RxSchema as attribute
    */
   createRxSchema: [],
+  preCreateRxQuery: [],
   createRxQuery: [],
   createRxDocument: [],
 
   /**
    * runs after a RxDocument is created,
    * cannot be async
-   * @type {Array}
    */
   postCreateRxDocument: [],
 
@@ -49,7 +65,6 @@ var HOOKS = {
    *   adapter: any,
    *   settings: object
    * }
-   * @type {Array}
    */
   preCreatePouchDb: [],
 
@@ -59,19 +74,16 @@ var HOOKS = {
    *   doc: Object, // originam doc-data
    *   migrated: // migrated doc-data after run throught migration-strategies
    * }
-   * @type {Array}
    */
   preMigrateDocument: [],
 
   /**
    * runs after the migration of a document has been done
-   * @type {Array}
    */
   postMigrateDocument: [],
 
   /**
    * runs at the beginning of the destroy-process of a database
-   * @type {Array}
    */
   preDestroyRxDatabase: []
 };
@@ -82,10 +94,6 @@ function runPluginHooks(hookKey, obj) {
     return fun(obj);
   });
 }
-/**
- * @return {Promise}
- */
-
 
 function runAsyncPluginHooks(hookKey, obj) {
   return Promise.all(HOOKS[hookKey].map(function (fun) {
@@ -97,8 +105,10 @@ function runAsyncPluginHooks(hookKey, obj) {
  */
 
 
-function clearHook(type, fun) {
+function _clearHook(type, fun) {
   HOOKS[type] = HOOKS[type].filter(function (h) {
     return h !== fun;
   });
 }
+
+//# sourceMappingURL=hooks.js.map
